@@ -1,0 +1,119 @@
+
+<div class="center">
+     <h3 style="font-size: 12px; margin-top: 20px">
+
+        Server time: {{server_timestamp}}  | <a href="/txpool">Transaction pool</a>
+         {{#enable_pusher}}
+            | <a href="/rawtx">Transaction pusher </a>
+         {{/enable_pusher}}
+         {{#enable_key_image_checker}}
+            | <a href="/rawkeyimgs">Key images checker</a>
+         {{/enable_key_image_checker}}
+         {{#enable_output_key_checker}}
+            | <a href="/rawoutputkeys">Output keys checker</a>
+         {{/enable_output_key_checker}}
+         {{#enable_autorefresh_option}}
+             |
+            {{#refresh}}
+                <a href="/">Autorefresh is ON (10 s)</a>
+            {{/refresh}}
+            {{^refresh}}
+               <a href="/autorefresh">Autorefresh is OFF</a>
+            {{/refresh}}
+         {{/enable_autorefresh_option}}
+         {{#testnet_url}}
+            | <a href="{{testnet_url}}">Go to testnet explorer</a>
+         {{/testnet_url}}
+         {{#mainnet_url}}
+            | <a href="{{mainnet_url}}">Go to mainnet explorer</a>
+         {{/mainnet_url}}
+         {{#testnet}}
+            | This is <span style="color:#ff6b62">testnet</span> blockchian
+         {{/testnet}}
+
+        </h3>
+
+
+    {{#network_info}}
+        <h3 style="font-size: 12px; margin-top: 5px; margin-bottom: 3">
+            Network difficulty: {{difficulty}}
+            | Hash rate: {{hash_rate}}
+            | Fee per kb: {{fee_per_kb}}
+            | Median block size limit: {{block_size_limit}} kB
+            {{^is_current_info}}
+            | Data from {{age}} {{age_format}} ago
+            {{/is_current_info}}
+        </h3>
+    {{/network_info}}
+
+    {{#emission}}
+        <h3 style="font-size: 12px; margin-top: 2px">
+            Electroneum emission (fees) is {{amount}} ({{fee_amount}}) as of {{blk_no}} block
+        </h3>
+    {{/emission}}
+
+
+</div>
+
+    {{{mempool_info}}}
+
+    {{#is_page_zero}}
+      <h2 style="margin-bottom: 0px">Transactions in the last {{no_of_last_blocks}} blocks</h2>
+    {{/is_page_zero}}
+    {{^is_page_zero}}
+      <h2 style="margin-bottom: 0px">Transactions in older blocks<!--(height: {{height}})--></h2>
+    {{/is_page_zero}}
+
+    <h4 style="font-size: 14px; margin-top: 0px">(Median size of these blocks: {{blk_size_median}} kB)</h4>
+
+    <div class="center">
+
+            <table class="center">
+                <tr>
+                    <td>height</td>
+                    <td>age {{age_format}}<!--(Δm)--></td>
+                    <td>size [kB]<!--(Δm)--></td>
+                    <td>tx hash</td>
+                    <td>fees</td>
+                    <td>outputs</td>
+                    <td>in(nonrct)/out</td>
+                    <td>ring size</td>
+                    <td>tx size [kB]</td>
+                </tr>
+                {{#txs}}
+                <tr>
+                    <td><a href="/block/{{height}}">{{height}}</a></td>
+                    <td>{{age}}<!--{{time_delta}}--></td>
+                    <td>{{blk_size}}</td>
+                    <td><a href="/tx/{{hash}}">{{hash}}</a></td>
+                    <td>{{tx_fee_short}}</td>
+                    <td>{{sum_outputs_short}}</td>
+                    <td>{{no_inputs}}({{no_nonrct_inputs}})/{{no_outputs}}</td>
+                    <td>{{mixin}}</td>
+                    <td>{{tx_size_short}}</td>
+                </tr>
+                {{/txs}}
+            </table>
+
+            <div id="pages" class="center" style="text-align: center;">
+             {{^is_page_zero}}
+               <a href="/page/{{prev_page}}">previous page</a> |
+               <a href="/">first page</a> |
+             {{/is_page_zero}}
+                current page: {{page_no}}/<a href="/page/{{total_page_no}}">{{total_page_no}}</a>
+                | <a href="/page/{{next_page}}">next page</a>
+            </div>
+
+    </div>
+
+
+{{#show_cache_times}}
+    <div class="center">
+        <h6 style="margin-top: 1px;color:#949490">
+            Tx details construction time: {{construction_time_total}} s
+            <br/>
+            includes {{construction_time_cached}} s from block cache ({{cache_hits}} hits)
+            and {{construction_time_non_cached}} s from non cache ({{cache_misses}} misses)
+        </h6>
+    </div>
+{{/show_cache_times}}
