@@ -303,7 +303,7 @@ bool   CurrentBlockchainStatus::testnet {false};
 
 string CurrentBlockchainStatus::output_file {"emission_amount.txt"};
 
-string CurrentBlockchainStatus::deamon_url {"http:://127.0.0.1:18081"};
+string CurrentBlockchainStatus::deamon_url {"http:://127.0.0.1:26968"};
 
 uint64_t  CurrentBlockchainStatus::blockchain_chunk_size {10000};
 
