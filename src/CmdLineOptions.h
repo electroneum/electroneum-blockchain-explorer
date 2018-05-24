@@ -2,8 +2,8 @@
 // Created by mwo on 6/11/15.
 //
 
-#ifndef XMREG01_CMDLINEOPTIONS_H
-#define XMREG01_CMDLINEOPTIONS_H
+#ifndef ETNEG01_CMDLINEOPTIONS_H
+#define ETNEG01_CMDLINEOPTIONS_H
 
 #include <iostream>
 #include <string>
@@ -34,4 +34,4 @@ namespace electroneumeg
 }
 
 
-#endif //XMREG01_CMDLINEOPTIONS_H
+#endif //ETNEG01_CMDLINEOPTIONS_H

@@ -2,8 +2,8 @@
 // Created by mwo on 5/11/15.
 //
 
-#ifndef XMREG01_MICROCORE_H
-#define XMREG01_MICROCORE_H
+#ifndef ETNEG01_MICROCORE_H
+#define ETNEG01_MICROCORE_H
 
 #include <iostream>
 
@@ -84,4 +84,4 @@ namespace electroneumeg
 
 
 
-#endif //XMREG01_MICROCORE_H
+#endif //ETNEG01_MICROCORE_H

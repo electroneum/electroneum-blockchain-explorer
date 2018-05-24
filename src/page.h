@@ -2,8 +2,8 @@
 // Created by mwo on 8/04/16.
 //
 
-#ifndef CROWXMR_PAGE_H
-#define CROWXMR_PAGE_H
+#ifndef CROWETN_PAGE_H
+#define CROWETN_PAGE_H
 
 
 
@@ -159,7 +159,7 @@ namespace electroneumeg
             string fee_str {"N/A"};
             string fee_short_str {"N/A"};
 
-            const double& etn_amount = XMR_AMOUNT(fee);
+            const double& etn_amount = ETN_AMOUNT(fee);
 
             if (!input_key_imgs.empty())
             {
@@ -5986,5 +5986,5 @@ namespace electroneumeg
 }
 
 
-#endif //CROWXMR_PAGE_H
+#endif //CROWETN_PAGE_H
 

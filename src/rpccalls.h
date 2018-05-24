@@ -3,8 +3,8 @@
 //
 
 
-#ifndef CROWXMR_RPCCALLS_H
-#define CROWXMR_RPCCALLS_H
+#ifndef CROWETN_RPCCALLS_H
+#define CROWETN_RPCCALLS_H
 
 #include "electroneum_headers.h"
 
@@ -189,4 +189,4 @@ public:
 
 
 
-#endif //CROWXMR_RPCCALLS_H
+#endif //CROWETN_RPCCALLS_H
