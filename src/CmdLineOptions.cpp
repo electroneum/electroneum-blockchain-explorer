@@ -5,7 +5,7 @@
 #include "CmdLineOptions.h"
 
 
-namespace xmreg
+namespace electroneumeg
 {
     /**
      * Take the acc and *avv[] from the main() and check and parse
@@ -18,7 +18,7 @@ namespace xmreg
         p.add("txhash", -1);
 
         options_description desc(
-                "xmrblocks, Onion Monero Blockchain Explorer");
+                "etnblocks, Electroneum Blockchain Explorer");
 
         desc.add_options()
                 ("help,h", value<bool>()->default_value(false)->implicit_value(true),
@@ -44,7 +44,7 @@ namespace xmreg
                 ("enable-autorefresh-option", value<bool>()->default_value(false)->implicit_value(true),
                  "enable users to have the index page on autorefresh")
                 ("enable-emission-monitor", value<bool>()->default_value(false)->implicit_value(true),
-                 "enable Monero total emission monitoring thread")
+                 "enable Electroneum total emission monitoring thread")
                 ("port,p", value<string>()->default_value("8081"),
                  "default explorer port")
                 ("testnet-url", value<string>()->default_value(""),
@@ -58,13 +58,13 @@ namespace xmreg
                 ("mempool-refresh-time", value<string>()->default_value("5"),
                  "time, in seconds, for each refresh of mempool state")
                 ("bc-path,b", value<string>(),
-                 "path to lmdb folder of the blockchain, e.g., ~/.bitmonero/lmdb")
+                 "path to lmdb folder of the blockchain, e.g., ~/.electroneum/lmdb")
                 ("ssl-crt-file", value<string>(),
                  "path to crt file for ssl (https) functionality")
                 ("ssl-key-file", value<string>(),
                  "path to key file for ssl (https) functionality")
                 ("deamon-url,d", value<string>()->default_value("http:://127.0.0.1:26968"),
-                 "Monero deamon url");
+                 "Electroneum deamon url");
 
 
         store(command_line_parser(acc, avv)

@@ -11,7 +11,7 @@
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 
-namespace xmreg
+namespace electroneumeg
 {
 
     using namespace std;

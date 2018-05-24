@@ -7,10 +7,10 @@
 
 #include <iostream>
 
-#include "monero_headers.h"
+#include "electroneum_headers.h"
 #include "tools.h"
 
-namespace xmreg
+namespace electroneumeg
 {
     using namespace cryptonote;
     using namespace crypto;

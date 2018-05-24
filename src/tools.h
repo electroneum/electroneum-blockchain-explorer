@@ -15,7 +15,7 @@
 
 
 
-#include "monero_headers.h"
+#include "electroneum_headers.h"
 
 #include "../ext/fmt/ostream.h"
 #include "../ext/fmt/format.h"
@@ -38,7 +38,7 @@
  * Names are rather self-explanatory, so I think
  * there is no reason for any detailed explanations here
  */
-namespace xmreg
+namespace electroneumeg
 {
 
     using namespace cryptonote;
@@ -202,7 +202,7 @@ namespace xmreg
 
 
     inline double
-    get_xmr(uint64_t core_amount)
+    get_etn(uint64_t core_amount)
     {
         return  static_cast<double>(core_amount) / 1e2;
     }
@@ -246,7 +246,7 @@ namespace xmreg
 
     static
     string
-    xmr_amount_to_str(const uint64_t& xmr_amount,
+    etn_amount_to_str(const uint64_t& etn_amount,
                       string _format="{:0.2f}",
                       bool zero_to_question_mark=true)
     {
@@ -254,13 +254,13 @@ namespace xmreg
 
         if (!zero_to_question_mark)
         {
-            amount_str = fmt::format(_format, XMR_AMOUNT(xmr_amount));
+            amount_str = fmt::format(_format, XMR_AMOUNT(etn_amount));
         }
         else
         {
-            if (xmr_amount > 0 && zero_to_question_mark == true)
+            if (etn_amount > 0 && zero_to_question_mark == true)
             {
-                amount_str = fmt::format(_format, XMR_AMOUNT(xmr_amount));
+                amount_str = fmt::format(_format, XMR_AMOUNT(etn_amount));
             }
         }
 

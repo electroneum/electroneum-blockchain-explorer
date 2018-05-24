@@ -16,7 +16,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace xmreg
+namespace electroneumeg
 {
 
 struct MempoolStatus
@@ -38,8 +38,8 @@ struct MempoolStatus
         uint64_t mixin_no {0};
 
         string fee_str;
-        string xmr_inputs_str;
-        string xmr_outputs_str;
+        string etn_inputs_str;
+        string etn_outputs_str;
         string timestamp_str;
         string txsize;
     };

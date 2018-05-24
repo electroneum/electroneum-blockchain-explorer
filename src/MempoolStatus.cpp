@@ -6,7 +6,7 @@
 
 #include "rpccalls.h"
 
-namespace xmreg
+namespace electroneumeg
 {
 
 using namespace std;
@@ -132,7 +132,7 @@ MempoolStatus::read_mempool()
         {
             transaction tx;
 
-            if (!xmreg::make_tx_from_json(_tx_info.tx_json, tx))
+            if (!electroneumeg::make_tx_from_json(_tx_info.tx_json, tx))
             {
                 cerr << "Cant make tx from _tx_info.tx_json" << endl;
                 return false;
@@ -158,10 +158,10 @@ MempoolStatus::read_mempool()
             // key images of inputs
             vector<txin_to_key> input_key_imgs;
 
-            // public keys and xmr amount of outputs
+            // public keys and etn amount of outputs
             vector<pair<txout_to_key, uint64_t>> output_pub_keys;
 
-            // sum xmr in inputs and ouputs in the given tx
+            // sum etn in inputs and ouputs in the given tx
             const array<uint64_t, 4>& sum_data = summary_of_in_out_rct(
                    tx, output_pub_keys, input_key_imgs);
 
@@ -174,10 +174,10 @@ MempoolStatus::read_mempool()
             last_tx.mixin_no          = sum_data[2];
             last_tx.num_nonrct_inputs = sum_data[3];
 
-            last_tx.fee_str         = xmreg::xmr_amount_to_str(_tx_info.fee, "{:0.2f}", false);
-            last_tx.xmr_inputs_str  = xmreg::xmr_amount_to_str(last_tx.sum_inputs , "{:0.2f}");
-            last_tx.xmr_outputs_str = xmreg::xmr_amount_to_str(last_tx.sum_outputs, "{:0.2f}");
-            last_tx.timestamp_str   = xmreg::timestamp_to_str_gm(_tx_info.receive_time);
+            last_tx.fee_str         = electroneumeg::etn_amount_to_str(_tx_info.fee, "{:0.2f}", false);
+            last_tx.etn_inputs_str  = electroneumeg::etn_amount_to_str(last_tx.sum_inputs , "{:0.2f}");
+            last_tx.etn_outputs_str = electroneumeg::etn_amount_to_str(last_tx.sum_outputs, "{:0.2f}");
+            last_tx.timestamp_str   = electroneumeg::timestamp_to_str_gm(_tx_info.receive_time);
 
             last_tx.txsize          = fmt::format("{:0.2f}",
                                           static_cast<double>(_tx_info.blob_size)/1024.0);
@@ -283,13 +283,13 @@ MempoolStatus::is_thread_running()
     return is_running;
 }
 
-bf::path MempoolStatus::blockchain_path {"/home/mwo/.bitmonero/lmdb"};
+bf::path MempoolStatus::blockchain_path {"/home/ubuntu/.electroneum/lmdb"};
 string MempoolStatus::deamon_url {"http:://127.0.0.1:26968"};
 bool   MempoolStatus::testnet {false};
 atomic<bool>       MempoolStatus::is_running {false};
 boost::thread      MempoolStatus::m_thread;
 Blockchain*        MempoolStatus::core_storage {nullptr};
-xmreg::MicroCore*  MempoolStatus::mcore {nullptr};
+electroneumeg::MicroCore*  MempoolStatus::mcore {nullptr};
 vector<MempoolStatus::mempool_tx> MempoolStatus::mempool_txs;
 atomic<MempoolStatus::network_info> MempoolStatus::current_network_info;
 atomic<uint64_t> MempoolStatus::mempool_no {0};   // no of txs
