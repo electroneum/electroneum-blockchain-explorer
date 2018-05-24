@@ -3450,7 +3450,7 @@ namespace electroneumeg
 
             // check if integrated electroneum address is given based on its length
             // if yes, then show its public components search tx based on encrypted id
-            if (search_str_length == 106)
+            if (search_str_length == 109)
             {
 
                 cryptonote::account_public_address address;
