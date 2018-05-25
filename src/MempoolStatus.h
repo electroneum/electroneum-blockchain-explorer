@@ -2,8 +2,8 @@
 // Created by mwo on 28/05/17.
 //
 
-#ifndef XMRBLOCKS_MEMPOOLSTATUS_H
-#define XMRBLOCKS_MEMPOOLSTATUS_H
+#ifndef ETNBLOCKS_MEMPOOLSTATUS_H
+#define ETNBLOCKS_MEMPOOLSTATUS_H
 
 
 #include "MicroCore.h"
@@ -16,7 +16,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace xmreg
+namespace electroneumeg
 {
 
 struct MempoolStatus
@@ -38,8 +38,8 @@ struct MempoolStatus
         uint64_t mixin_no {0};
 
         string fee_str;
-        string xmr_inputs_str;
-        string xmr_outputs_str;
+        string etn_inputs_str;
+        string etn_outputs_str;
         string timestamp_str;
         string txsize;
     };
@@ -152,4 +152,4 @@ struct MempoolStatus
 };
 
 }
-#endif //XMRBLOCKS_MEMPOOLSTATUS_H
+#endif //ETNBLOCKS_MEMPOOLSTATUS_H

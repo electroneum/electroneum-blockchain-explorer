@@ -14,7 +14,7 @@ using boost::filesystem::path;
 
 using namespace std;
 
-namespace myxmr
+namespace myetn
 {
 struct jsonresponse: crow::response
 {
@@ -32,7 +32,7 @@ int
 main(int ac, const char* av[])
 {
     // get command line options
-    xmreg::CmdLineOptions opts {ac, av};
+    electroneumeg::CmdLineOptions opts {ac, av};
 
     auto help_opt                      = opts.get_option<bool>("help");
 
@@ -79,7 +79,7 @@ main(int ac, const char* av[])
     bool show_cache_times             {*show_cache_times_opt};
 
 
-    // set  monero log output level
+    // set  electroneum log output level
     uint32_t log_level = 0;
     mlog_configure("", true);
 
@@ -125,7 +125,7 @@ main(int ac, const char* av[])
     // get blockchain path
     path blockchain_path;
 
-    if (!xmreg::get_blockchain_path(bc_path_opt, blockchain_path, testnet))
+    if (!electroneumeg::get_blockchain_path(bc_path_opt, blockchain_path, testnet))
     {
         cerr << "Error getting blockchain path." << endl;
         return EXIT_FAILURE;
@@ -136,11 +136,11 @@ main(int ac, const char* av[])
 
     // create instance of our MicroCore
     // and make pointer to the Blockchain
-    xmreg::MicroCore mcore;
+    electroneumeg::MicroCore mcore;
     cryptonote::Blockchain* core_storage;
 
     // initialize mcore and core_storage
-    if (!xmreg::init_blockchain(blockchain_path.string(),
+    if (!electroneumeg::init_blockchain(blockchain_path.string(),
                                mcore, core_storage))
     {
         cerr << "Error accessing blockchain." << endl;
@@ -174,41 +174,41 @@ main(int ac, const char* av[])
     {
         // This starts new thread, which aim is
         // to calculate, store and monitor
-        // current total Monero emission amount.
+        // current total Electroneum emission amount.
 
         // This thread stores the current emission
         // which it has caluclated in
         // <blockchain_path>/emission_amount.txt file,
-        // e.g., ~/.bitmonero/lmdb/emission_amount.txt.
+        // e.g., ~/.electroneum/lmdb/emission_amount.txt.
         // So instead of calcualting the emission
         // from scrach whenever the explorer is started,
         // the thread is initalized with the values
         // found in emission_amount.txt file.
 
-        xmreg::CurrentBlockchainStatus::blockchain_path
+        electroneumeg::CurrentBlockchainStatus::blockchain_path
                 = blockchain_path;
-        xmreg::CurrentBlockchainStatus::testnet
+        electroneumeg::CurrentBlockchainStatus::testnet
                 = testnet;
-        xmreg::CurrentBlockchainStatus::deamon_url
+        electroneumeg::CurrentBlockchainStatus::deamon_url
                 = deamon_url;
-        xmreg::CurrentBlockchainStatus::set_blockchain_variables(
+        electroneumeg::CurrentBlockchainStatus::set_blockchain_variables(
                 &mcore, core_storage);
 
         // launch the status monitoring thread so that it keeps track of blockchain
         // info, e.g., current height. Information from this thread is used
         // by tx searching threads that are launched for each user independently,
         // when they log back or create new account.
-        xmreg::CurrentBlockchainStatus::start_monitor_blockchain_thread();
+        electroneumeg::CurrentBlockchainStatus::start_monitor_blockchain_thread();
     }
 
 
-    xmreg::MempoolStatus::blockchain_path
+    electroneumeg::MempoolStatus::blockchain_path
             = blockchain_path;
-    xmreg::MempoolStatus::testnet
+    electroneumeg::MempoolStatus::testnet
             = testnet;
-    xmreg::MempoolStatus::deamon_url
+    electroneumeg::MempoolStatus::deamon_url
             = deamon_url;
-    xmreg::MempoolStatus::set_blockchain_variables(
+    electroneumeg::MempoolStatus::set_blockchain_variables(
             &mcore, core_storage);
 
 
@@ -228,12 +228,12 @@ main(int ac, const char* av[])
     // info, e.g., current height. Information from this thread is used
     // by tx searching threads that are launched for each user independently,
     // when they log back or create new account.
-    xmreg::MempoolStatus::mempool_refresh_time = mempool_refresh_time;
-    xmreg::MempoolStatus::start_mempool_status_thread();
+    electroneumeg::MempoolStatus::mempool_refresh_time = mempool_refresh_time;
+    electroneumeg::MempoolStatus::start_mempool_status_thread();
 
     // create instance of page class which
     // contains logic for the website
-    xmreg::page xmrblocks(&mcore,
+    electroneumeg::page etnblocks(&mcore,
                           core_storage,
                           deamon_url,
                           testnet,
@@ -261,49 +261,49 @@ main(int ac, const char* av[])
 
     CROW_ROUTE(app, "/")
     ([&](const crow::request& req) {
-        return crow::response(xmrblocks.index2());
+        return crow::response(etnblocks.index2());
     });
 
     CROW_ROUTE(app, "/page/<uint>")
     ([&](size_t page_no) {
-        return xmrblocks.index2(page_no);
+        return etnblocks.index2(page_no);
     });
 
     CROW_ROUTE(app, "/block/<uint>")
     ([&](const crow::request& req, size_t block_height) {
-        return crow::response(xmrblocks.show_block(block_height));
+        return crow::response(etnblocks.show_block(block_height));
     });
 
     CROW_ROUTE(app, "/block/<string>")
     ([&](const crow::request& req, string block_hash) {
-        return crow::response(xmrblocks.show_block(block_hash));
+        return crow::response(etnblocks.show_block(block_hash));
     });
 
     CROW_ROUTE(app, "/tx/<string>")
     ([&](const crow::request& req, string tx_hash) {
-        return crow::response(xmrblocks.show_tx(tx_hash));
+        return crow::response(etnblocks.show_tx(tx_hash));
     });
 
     CROW_ROUTE(app, "/tx/<string>/<uint>")
     ([&](string tx_hash, uint16_t with_ring_signatures) {
-        return xmrblocks.show_tx(tx_hash, with_ring_signatures);
+        return etnblocks.show_tx(tx_hash, with_ring_signatures);
     });
 
     CROW_ROUTE(app, "/myoutputs").methods("POST"_method)
     ([&](const crow::request& req) {
 
         map<std::string, std::string> post_body
-                = xmreg::parse_crow_post_data(req.body);
+                = electroneumeg::parse_crow_post_data(req.body);
 
-        if (post_body.count("xmr_address") == 0
+        if (post_body.count("etn_address") == 0
             || post_body.count("viewkey") == 0
             || post_body.count("tx_hash") == 0)
         {
-            return string("xmr address, viewkey or tx hash not provided");
+            return string("etn address, viewkey or tx hash not provided");
         }
 
         string tx_hash     = post_body["tx_hash"];
-        string xmr_address = post_body["xmr_address"];
+        string etn_address = post_body["etn_address"];
         string viewkey     = post_body["viewkey"];
 
         // this will be only not empty when checking raw tx data
@@ -312,18 +312,18 @@ main(int ac, const char* av[])
 
         string domain      =  get_domain(req);
 
-        return xmrblocks.show_my_outputs(tx_hash, xmr_address,
+        return etnblocks.show_my_outputs(tx_hash, etn_address,
                                          viewkey, raw_tx_data,
                                          domain);
     });
 
     CROW_ROUTE(app, "/myoutputs/<string>/<string>/<string>")
     ([&](const crow::request& req, string tx_hash,
-         string xmr_address, string viewkey) {
+         string etn_address, string viewkey) {
 
         string domain = get_domain(req);
 
-        return xmrblocks.show_my_outputs(tx_hash, xmr_address,
+        return etnblocks.show_my_outputs(tx_hash, etn_address,
                                          viewkey, string {},
                                          domain);
     });
@@ -332,34 +332,34 @@ main(int ac, const char* av[])
         ([&](const crow::request& req) {
 
             map<std::string, std::string> post_body
-                    = xmreg::parse_crow_post_data(req.body);
+                    = electroneumeg::parse_crow_post_data(req.body);
 
-            if (post_body.count("xmraddress") == 0
+            if (post_body.count("etnaddress") == 0
                 || post_body.count("txprvkey") == 0
                 || post_body.count("txhash") == 0)
             {
-                return string("xmr address, tx private key or "
+                return string("etn address, tx private key or "
                                       "tx hash not provided");
             }
 
             string tx_hash     = post_body["txhash"];;
             string tx_prv_key  = post_body["txprvkey"];;
-            string xmr_address = post_body["xmraddress"];;
+            string etn_address = post_body["etnaddress"];;
 
             string domain      = get_domain(req);
 
-            return xmrblocks.show_prove(tx_hash, xmr_address,
+            return etnblocks.show_prove(tx_hash, etn_address,
                                         tx_prv_key, domain);
     });
 
 
     CROW_ROUTE(app, "/prove/<string>/<string>/<string>")
     ([&](const crow::request& req, string tx_hash,
-         string xmr_address, string tx_prv_key) {
+         string etn_address, string tx_prv_key) {
 
         string domain = get_domain(req);
 
-        return xmrblocks.show_prove(tx_hash, xmr_address,
+        return etnblocks.show_prove(tx_hash, etn_address,
                                     tx_prv_key, domain);
     });
 
@@ -367,14 +367,14 @@ main(int ac, const char* av[])
     {
         CROW_ROUTE(app, "/rawtx")
         ([&](const crow::request& req) {
-            return xmrblocks.show_rawtx();
+            return etnblocks.show_rawtx();
         });
 
         CROW_ROUTE(app, "/checkandpush").methods("POST"_method)
         ([&](const crow::request& req) {
 
             map<std::string, std::string> post_body
-                    = xmreg::parse_crow_post_data(req.body);
+                    = electroneumeg::parse_crow_post_data(req.body);
 
             if (post_body.count("rawtxdata") == 0 || post_body.count("action") == 0)
             {
@@ -385,9 +385,9 @@ main(int ac, const char* av[])
             string action      = post_body["action"];
 
             if (action == "check")
-                return xmrblocks.show_checkrawtx(raw_tx_data, action);
+                return etnblocks.show_checkrawtx(raw_tx_data, action);
             else if (action == "push")
-                return xmrblocks.show_pushrawtx(raw_tx_data, action);
+                return etnblocks.show_pushrawtx(raw_tx_data, action);
 
         });
     }
@@ -396,14 +396,14 @@ main(int ac, const char* av[])
     {
         CROW_ROUTE(app, "/rawkeyimgs")
         ([&](const crow::request& req) {
-            return xmrblocks.show_rawkeyimgs();
+            return etnblocks.show_rawkeyimgs();
         });
 
         CROW_ROUTE(app, "/checkrawkeyimgs").methods("POST"_method)
         ([&](const crow::request& req) {
 
             map<std::string, std::string> post_body
-                    = xmreg::parse_crow_post_data(req.body);
+                    = electroneumeg::parse_crow_post_data(req.body);
 
             if (post_body.count("rawkeyimgsdata") == 0)
             {
@@ -418,7 +418,7 @@ main(int ac, const char* av[])
             string raw_data = post_body["rawkeyimgsdata"];
             string viewkey  = post_body["viewkey"];
 
-            return xmrblocks.show_checkrawkeyimgs(raw_data, viewkey);
+            return etnblocks.show_checkrawkeyimgs(raw_data, viewkey);
         });
     }
 
@@ -427,14 +427,14 @@ main(int ac, const char* av[])
     {
         CROW_ROUTE(app, "/rawoutputkeys")
         ([&](const crow::request& req) {
-            return xmrblocks.show_rawoutputkeys();
+            return etnblocks.show_rawoutputkeys();
         });
 
         CROW_ROUTE(app, "/checkrawoutputkeys").methods("POST"_method)
         ([&](const crow::request& req) {
 
             map<std::string, std::string> post_body
-                    = xmreg::parse_crow_post_data(req.body);
+                    = electroneumeg::parse_crow_post_data(req.body);
 
             if (post_body.count("rawoutputkeysdata") == 0)
             {
@@ -450,30 +450,30 @@ main(int ac, const char* av[])
             string raw_data = post_body["rawoutputkeysdata"];
             string viewkey  = post_body["viewkey"];
 
-            return xmrblocks.show_checkcheckrawoutput(raw_data, viewkey);
+            return etnblocks.show_checkcheckrawoutput(raw_data, viewkey);
         });
     }
 
 
     CROW_ROUTE(app, "/search").methods("GET"_method)
     ([&](const crow::request& req) {
-        return xmrblocks.search(string(req.url_params.get("value")));
+        return etnblocks.search(string(req.url_params.get("value")));
     });
 
     CROW_ROUTE(app, "/mempool")
     ([&](const crow::request& req) {
-        return xmrblocks.mempool(true);
+        return etnblocks.mempool(true);
     });
 
     // alias to  "/mempool"
     CROW_ROUTE(app, "/txpool")
     ([&](const crow::request& req) {
-        return xmrblocks.mempool(true);
+        return etnblocks.mempool(true);
     });
 
 //    CROW_ROUTE(app, "/altblocks")
 //    ([&](const crow::request& req) {
-//        return xmrblocks.altblocks();
+//        return etnblocks.altblocks();
 //    });
 
     CROW_ROUTE(app, "/robots.txt")
@@ -488,7 +488,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/transaction/<string>")
         ([&](const crow::request &req, string tx_hash) {
 
-            myxmr::jsonresponse r{xmrblocks.json_transaction(tx_hash)};
+            myetn::jsonresponse r{etnblocks.json_transaction(tx_hash)};
 
             return r;
         });
@@ -496,7 +496,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/rawtransaction/<string>")
         ([&](const crow::request &req, string tx_hash) {
 
-            myxmr::jsonresponse r{xmrblocks.json_rawtransaction(tx_hash)};
+            myetn::jsonresponse r{etnblocks.json_rawtransaction(tx_hash)};
 
             return r;
         });
@@ -504,7 +504,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/block/<string>")
         ([&](const crow::request &req, string block_no_or_hash) {
 
-            myxmr::jsonresponse r{xmrblocks.json_block(block_no_or_hash)};
+            myetn::jsonresponse r{etnblocks.json_block(block_no_or_hash)};
 
             return r;
         });
@@ -512,7 +512,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/rawblock/<string>")
         ([&](const crow::request &req, string block_no_or_hash) {
 
-            myxmr::jsonresponse r{xmrblocks.json_rawblock(block_no_or_hash)};
+            myetn::jsonresponse r{etnblocks.json_rawblock(block_no_or_hash)};
 
             return r;
         });
@@ -526,7 +526,7 @@ main(int ac, const char* av[])
             string limit = regex_search(req.raw_url, regex {"limit=\\d+"}) ?
                            req.url_params.get("limit") : "25";
 
-            myxmr::jsonresponse r{xmrblocks.json_transactions(page, limit)};
+            myetn::jsonresponse r{etnblocks.json_transactions(page, limit)};
 
             return r;
         });
@@ -543,7 +543,7 @@ main(int ac, const char* av[])
             string limit = regex_search(req.raw_url, regex {"limit=\\d+"}) ?
                            req.url_params.get("limit") : "100000000";
 
-            myxmr::jsonresponse r{xmrblocks.json_mempool(page, limit)};
+            myetn::jsonresponse r{etnblocks.json_mempool(page, limit)};
 
             return r;
         });
@@ -551,7 +551,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/search/<string>")
         ([&](const crow::request &req, string search_value) {
 
-            myxmr::jsonresponse r{xmrblocks.json_search(search_value)};
+            myetn::jsonresponse r{etnblocks.json_search(search_value)};
 
             return r;
         });
@@ -559,7 +559,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/networkinfo")
         ([&](const crow::request &req) {
 
-            myxmr::jsonresponse r{xmrblocks.json_networkinfo()};
+            myetn::jsonresponse r{etnblocks.json_networkinfo()};
 
             return r;
         });
@@ -567,7 +567,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/emission")
         ([&](const crow::request &req) {
 
-            myxmr::jsonresponse r{xmrblocks.json_emission()};
+            myetn::jsonresponse r{etnblocks.json_emission()};
 
             return r;
         });
@@ -597,7 +597,7 @@ main(int ac, const char* av[])
                 cerr << "Cant parse tx_prove as bool. Using default value" << endl;
             }
 
-            myxmr::jsonresponse r{xmrblocks.json_outputs(tx_hash, address, viewkey, tx_prove)};
+            myetn::jsonresponse r{etnblocks.json_outputs(tx_hash, address, viewkey, tx_prove)};
 
             return r;
         });
@@ -627,7 +627,7 @@ main(int ac, const char* av[])
                 cerr << "Cant parse tx_prove as bool. Using default value" << endl;
             }
 
-            myxmr::jsonresponse r{xmrblocks.json_outputsblocks(limit, address, viewkey, in_mempool_aswell)};
+            myetn::jsonresponse r{etnblocks.json_outputsblocks(limit, address, viewkey, in_mempool_aswell)};
 
             return r;
         });
@@ -635,7 +635,7 @@ main(int ac, const char* av[])
         CROW_ROUTE(app, "/api/version")
         ([&](const crow::request &req) {
 
-            myxmr::jsonresponse r{xmrblocks.json_version()};
+            myetn::jsonresponse r{etnblocks.json_version()};
 
             return r;
         });
@@ -648,7 +648,7 @@ main(int ac, const char* av[])
         ([&]() {
             uint64_t page_no {0};
             bool refresh_page {true};
-            return xmrblocks.index2(page_no, refresh_page);
+            return etnblocks.index2(page_no, refresh_page);
         });
     }
 
@@ -673,8 +673,8 @@ main(int ac, const char* av[])
 
         cout << "Waiting for emission monitoring thread to finish." << endl;
 
-        xmreg::CurrentBlockchainStatus::m_thread.interrupt();
-        xmreg::CurrentBlockchainStatus::m_thread.join();
+        electroneumeg::CurrentBlockchainStatus::m_thread.interrupt();
+        electroneumeg::CurrentBlockchainStatus::m_thread.join();
 
         cout << "Emission monitoring thread finished." << endl;
     }
@@ -683,8 +683,8 @@ main(int ac, const char* av[])
 
     cout << "Waiting for mempool monitoring thread to finish." << endl;
 
-    xmreg::MempoolStatus::m_thread.interrupt();
-    xmreg::MempoolStatus::m_thread.join();
+    electroneumeg::MempoolStatus::m_thread.interrupt();
+    electroneumeg::MempoolStatus::m_thread.join();
 
     cout << "Mempool monitoring thread finished." << endl;
 

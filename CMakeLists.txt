@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(PROJECT_NAME
-        xmrblocks)
+        etnblocks)
 
 
 project(${PROJECT_NAME})
@@ -14,30 +14,30 @@ if (WIN32)
 endif()
 
 
-if (NOT MONERO_DIR)
-    set(MONERO_DIR ~/monero)
+if (NOT ELECTRONEUM_DIR)
+    set(ELECTRONEUM_DIR ~/electroneum)
 endif()
 
-message(STATUS MONERO_DIR ": ${MONERO_DIR}")
+message(STATUS ELECTRONEUM_DIR ": ${ELECTRONEUM_DIR}")
 
-set(MONERO_SOURCE_DIR ${MONERO_DIR}
-        CACHE PATH "Path to the root directory for Monero")
+set(ELECTRONEUM_SOURCE_DIR ${ELECTRONEUM_DIR}
+        CACHE PATH "Path to the root directory for Electroneum")
 
-# set location of monero build tree
-set(MONERO_BUILD_DIR ${MONERO_SOURCE_DIR}/build/release/
-        CACHE PATH "Path to the build directory for Monero")
+# set location of electroneum build tree
+set(ELECTRONEUM_BUILD_DIR ${ELECTRONEUM_SOURCE_DIR}/build/release/
+        CACHE PATH "Path to the build directory for Electroneum")
 
 set(MY_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake"
         CACHE PATH "The path to the cmake directory of the current project")
 
 list(APPEND CMAKE_MODULE_PATH "${MY_CMAKE_DIR}")
 
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "${MONERO_BUILD_DIR}"
-        CACHE PATH "Add Monero directory for library searching")
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "${ELECTRONEUM_BUILD_DIR}"
+        CACHE PATH "Add Electroneum directory for library searching")
 
 include(MyUtils)
 
-find_package(Monero)
+find_package(Electroneum)
 
 # find boost
 find_package(Boost COMPONENTS
@@ -53,7 +53,6 @@ find_package(Boost COMPONENTS
         REQUIRED)
 
 
-
 if(APPLE)
     include_directories(/usr/local/opt/openssl/include)
     link_directories(/usr/local/opt/openssl/lib)
@@ -62,7 +61,7 @@ endif()
 
 #if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR WIN32)
     add_library(unbound STATIC IMPORTED)
-    set_property(TARGET unbound PROPERTY IMPORTED_LOCATION ${MONERO_BUILD_DIR}/external/unbound/libunbound.a)
+    set_property(TARGET unbound PROPERTY IMPORTED_LOCATION ${ELECTRONEUM_BUILD_DIR}/external/unbound/libunbound.a)
 #endif()
 
 # include boost headers
