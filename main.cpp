@@ -141,7 +141,7 @@ main(int ac, const char* av[])
 
     // initialize mcore and core_storage
     if (!electroneumeg::init_blockchain(blockchain_path.string(),
-                               mcore, core_storage))
+                               mcore, core_storage, nettype))
     {
         cerr << "Error accessing blockchain." << endl;
         return EXIT_FAILURE;
