@@ -24,12 +24,18 @@
          {{#testnet_url}}
             | <a href="{{testnet_url}}">Go to testnet explorer</a>
          {{/testnet_url}}
+         {{#stagenet_url}}
+            | <a href="{{stagenet_url}}">Go to stagenet explorer</a>
+         {{/stagenet_url}}
          {{#mainnet_url}}
             | <a href="{{mainnet_url}}">Go to mainnet explorer</a>
          {{/mainnet_url}}
          {{#testnet}}
-            | This is <span style="color:#ff6b62">testnet</span> blockchian
+            | This is <span style="color:#ff6b62">testnet</span> blockchain
          {{/testnet}}
+         {{#stagenet}}
+            | This is <span style="color:#ff6b62">stagenet</span> blockchain
+         {{/stagenet}}
 
         </h3>
 
@@ -37,8 +43,9 @@
     {{#network_info}}
         <h3 style="font-size: 12px; margin-top: 5px; margin-bottom: 3">
             Network difficulty: {{difficulty}}
+            | Hard fork: v{{current_hf_version}}
             | Hash rate: {{hash_rate}}
-            | Fee per kb: {{fee_per_kb}}
+            | Fee per byte: {{fee_per_kb}}
             | Median block size limit: {{block_size_limit}} kB
             {{^is_current_info}}
             | Data from {{age}} {{age_format}} ago
@@ -64,7 +71,7 @@
       <h2 style="margin-bottom: 0px">Transactions in older blocks<!--(height: {{height}})--></h2>
     {{/is_page_zero}}
 
-    <h4 style="font-size: 14px; margin-top: 0px">(Median size of these blocks: {{blk_size_median}} kB)</h4>
+    <h4 style="font-size: 14px; margin-top: 0px">(Median size of 100 blocks: {{blk_size_median}} kB)</h4>
 
     <div class="center">
 
@@ -73,11 +80,10 @@
                     <td>height</td>
                     <td>age {{age_format}}<!--(Δm)--></td>
                     <td>size [kB]<!--(Δm)--></td>
-                    <td>tx hash</td>
-                    <td>fees</td>
+                    <td>transaction hash</td>
+                    <td>fee</td>
                     <td>outputs</td>
-                    <td>in(nonrct)/out</td>
-                    <td>ring size</td>
+                    <td>in/out/pID</td>
                     <td>tx size [kB]</td>
                 </tr>
                 {{#txs}}
@@ -86,10 +92,9 @@
                     <td>{{age}}<!--{{time_delta}}--></td>
                     <td>{{blk_size}}</td>
                     <td><a href="/tx/{{hash}}">{{hash}}</a></td>
-                    <td>{{tx_fee_short}}</td>
+                    <td>{{fee_micro}}</td>
                     <td>{{sum_outputs_short}}</td>
-                    <td>{{no_inputs}}({{no_nonrct_inputs}})/{{no_outputs}}</td>
-                    <td>{{mixin}}</td>
+                    <td>{{no_inputs}}/{{no_outputs}}/{{pID}}</td>
                     <td>{{tx_size_short}}</td>
                 </tr>
                 {{/txs}}
