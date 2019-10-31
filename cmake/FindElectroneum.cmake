@@ -28,9 +28,9 @@
 # (c) 2014-2016 cpp-ethereum contributors.
 #------------------------------------------------------------------------------
 
-set(LIBS common;blocks;cryptonote_basic;cryptonote_core;
-		cryptonote_protocol;daemonizer;mnemonics;epee;lmdb;
-		blockchain_db;ringct;wallet;cncrypto)
+set(LIBS common;blocks;cryptonote_basic;cryptonote_core;multisig;
+		cryptonote_protocol;daemonizer;mnemonics;epee;lmdb;device;
+		blockchain_db;ringct;wallet;cncrypto;easylogging;version;checkpoints;ed25519-donna)
 
 set(Etn_INCLUDE_DIRS "${CPP_ELECTRONEUM_DIR}")
 
@@ -44,7 +44,7 @@ foreach (l ${LIBS})
 	find_library(Etn_${L}_LIBRARY
 		NAMES ${l}
 		PATHS ${CMAKE_LIBRARY_PATH}
-		PATH_SUFFIXES "/src/${l}" "/external/db_drivers/lib${l}" "/lib" "/src/crypto" "/contrib/epee/src"
+		PATH_SUFFIXES "/" "/src/${l}" "/src/" "/external/db_drivers/lib${l}" "/lib" "/src/crypto" "/contrib/epee/src" "/external/easylogging++/"
 		NO_DEFAULT_PATH
 	)
 
@@ -57,11 +57,13 @@ foreach (l ${LIBS})
 
 endforeach()
 
-if (EXISTS ${ELECTRONEUM_BUILD_DIR}/external/easylogging++/libeasylogging.a)
-	add_library(easylogging STATIC IMPORTED)
-	set_property(TARGET easylogging
-			PROPERTY IMPORTED_LOCATION ${ELECTRONEUM_BUILD_DIR}/external/easylogging++/libeasylogging.a)
+if (EXISTS ${ELECTRONEUM_BUILD_DIR}/src/ringct/libringct_basic.a)
+	message(STATUS FindElectroneum " found libringct_basic.a")
+	add_library(ringct_basic STATIC IMPORTED)
+	set_property(TARGET ringct_basic
+			PROPERTY IMPORTED_LOCATION ${ELECTRONEUM_BUILD_DIR}/src/ringct/libringct_basic.a)
 endif()
+
 
 message(STATUS ${ELECTRONEUM_SOURCE_DIR}/build)
 

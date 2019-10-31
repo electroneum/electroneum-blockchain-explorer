@@ -14,7 +14,7 @@ endif()
 
 
 if (NOT ELECTRONEUM_DIR)
-    set(ELECTRONEUM_DIR ~/Electroneum)
+    set(ELECTRONEUM_DIR ~/electroneum)
 endif()
 
 message(STATUS ELECTRONEUM_DIR ": ${ELECTRONEUM_DIR}")
@@ -134,8 +134,8 @@ set(LIBRARIES
         unbound
         curl
         crypto
-        ssl)
-
+        ssl
+	ed25519-donna)
 if(APPLE)
     set(LIBRARIES ${LIBRARIES} "-framework IOKit -framework Foundation")
 else()
