@@ -1,8 +1,8 @@
 body {
     margin: 0;
     padding: 0;
-    color: white;
-    background-color: black;
+    color: black;
+    font-family: 'Quicksand', sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -12,14 +12,31 @@ h1, h2, h3, h4, h5, h6 {
 .center {
     margin: auto;
     width: 96%;
-    /*border: 1px solid #73AD21;
-    padding: 10px;*/
+    max-width: 1400px;
+}
+
+table {
+    width: 100%;
+    border-spacing: 0;
+    border: 1px solid #e6e6e6;
 }
 
 tr, li, #pages, .info {
     font-family: "Lucida Console", Monaco, monospace;
     font-size  : 12px;
     height: 22px;
+}
+
+tr:hover {
+    background-color: #f3f3f3;
+}
+
+tr:first-of-type {
+    background-color: #e6e6e6;
+}
+
+td {
+    border-top: 1px solid #e6e6e6!important;
 }
 
 #pages
@@ -33,31 +50,33 @@ td {
 
 a:link {
     text-decoration: none;
-    color: white;
+    color: #23bee2;
 }
 
 a:visited {
     text-decoration: none;
-    color: white;
+    color: #23bee2;
 }
 
 a:hover {
     text-decoration: underline;
-    color: white;
+    color: #23bee2;
 }
 
 a:active {
     text-decoration: none;
-    color: white;
+    color: #23bee2;
 }
 
 form {
     display: inline-block;
+    vertical-align: middle;
     text-align: center;
 }
 
 .style-1 input[type="text"] {
-    padding: 2px;
+    padding: 10px;
+    font-size: 12px;
     border: solid 1px #dcdcdc;
     transition: box-shadow 0.3s, border 0.3s;
 }
@@ -66,7 +85,17 @@ form {
     border: solid 1px #707070;
     box-shadow: 0 0 5px 1px #969696;
 }
-
+.style-1 input[type="submit"] {
+    min-height: 36px;
+    border: none;
+    -webkit-appearance: none;
+    vertical-align: middle;
+    padding: 10px;
+    color: #fff;
+    background-color: #23bee2;
+    text-transform: uppercase;
+    font-size: 12px;
+}
 
 .tabs {
     position: relative;
@@ -80,7 +109,7 @@ form {
 }
 
 .tab label {
-    background: black;
+    background: #fff;
     padding: 10px;
     border: 1px solid #ccc;
     margin-left: -1px;
@@ -96,7 +125,7 @@ form {
     position: absolute;
     top: 28px;
     left: 0;
-    background: black;
+    background: #fff;
     right: 0;
     bottom: 0;
     padding: 20px;
@@ -104,7 +133,7 @@ form {
 }
 
 [type=radio]:checked ~ label {
-    background: #505050 ;
+    background: #e6e6e6 ;
     border-bottom: 1px solid white;
     z-index: 2;
 }
@@ -138,4 +167,14 @@ div#decoded-inputs{
 /* Toggled State */
 input#toggle-1[type=checkbox]:checked ~ div#decoded-inputs {
     display: block;
+}
+
+header {
+    background-color: black;
+}
+header img {
+    margin: 10px 20px 10px 0;
+    max-width: 250px;
+    display: inline-block;
+    vertical-align: middle;
 }
