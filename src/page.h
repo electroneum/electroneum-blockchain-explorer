@@ -254,11 +254,11 @@ struct tx_details
     size_t   version;
 
     bool has_additional_tx_pub_keys {false};
-
+/*
     char     pID; // '-' - no payment ID,
                   // 'l' - legacy, long 64 character payment id,
                   // 'e' - encrypted, short, from integrated addresses
-                  // 's' - sub-address (avaliable only for multi-output txs)
+                  // 's' - sub-address (avaliable only for multi-output txs)*/
     uint64_t unlock_time;
     uint64_t no_confirmations;
     vector<uint8_t> extra;
@@ -327,7 +327,7 @@ struct tx_details
                 {"version"           , static_cast<uint64_t>(version)},
                 {"has_payment_id"    , payment_id  != null_hash},
                 {"has_payment_id8"   , payment_id8 != null_hash8},
-                {"pID"               , string {pID}},
+                //{"pID"               , string {pID}},
                 {"payment_id"        , pod_to_hex(payment_id)},
                 {"confirmations"     , no_confirmations},
                 {"extra"             , get_extra_str()},
@@ -906,7 +906,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
     } // while (i <= end_height)
 
     // calculate median size of the blocks shown
-    //double blk_size_median = electroneumeg::calc_median(blk_sizes.begin(), blk_sizes.end());
+    double blk_size_median = electroneumeg::calc_median(blk_sizes.begin(), blk_sizes.end());
 
     // save computational times for disply in the frontend
 
@@ -966,7 +966,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
     };
 
     // median size of 100 blocks
-    context["blk_size_median"] = string {current_network_info.block_size_median_str};
+    context["blk_size_median"] = string {blk_size_median};
 
     string mempool_html {"Cant get mempool_pool"};
 
@@ -1108,7 +1108,7 @@ mempool(bool add_header_and_footer = false, uint64_t no_of_mempool_tx = 25)
                 {"etn_outputs"     , mempool_tx.etn_outputs_str},
                 {"no_inputs"       , mempool_tx.no_inputs},
                 {"no_outputs"      , mempool_tx.no_outputs},
-                {"pID"             , string {mempool_tx.pID}},
+                //{"pID"             , string {mempool_tx.pID}},
                 {"no_nonrct_inputs", mempool_tx.num_nonrct_inputs},
                 {"mixin"           , mempool_tx.mixin_no},
                 {"txsize"          , mempool_tx.txsize}
@@ -6793,7 +6793,7 @@ get_tx_details(const transaction& tx,
         }
     }
 
-    txd.pID = '-'; // no payment ID
+    //txd.pID = '-'; // no payment ID
 
     get_payment_id(tx, txd.payment_id, txd.payment_id8);
 
@@ -6805,18 +6805,18 @@ get_tx_details(const transaction& tx,
     if (txd.payment_id != null_hash)
     {
         txd.payment_id_as_ascii = std::string(txd.payment_id.data, crypto::HASH_SIZE);
-        txd.pID = 'l'; // legacy payment id
+        //txd.pID = 'l'; // legacy payment id
     }
     else if (txd.payment_id8 != null_hash8)
     {
-        txd.pID = 'e'; // encrypted payment id
+        //txd.pID = 'e'; // encrypted payment id
     }
     else if (txd.additional_pks.empty() == false)
     {
         // if multioutput tx have additional public keys,
         // mark it so that it represents that it has at least
         // one sub-address
-        txd.pID = 's';
+        //txd.pID = 's';
     }
 
     // get tx signatures for each input

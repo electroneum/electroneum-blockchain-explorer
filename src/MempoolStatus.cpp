@@ -199,7 +199,7 @@ MempoolStatus::read_mempool()
         last_tx.timestamp_str    = electroneumeg::timestamp_to_str_gm(_tx_info.receive_time);
 
         last_tx.txsize           = fmt::format("{:0.2f}", tx_size);
-
+/*
         last_tx.pID              = '-';
 
         crypto::hash payment_id;
@@ -219,7 +219,7 @@ MempoolStatus::read_mempool()
             last_tx.pID = 's';
         }
        // } // if (hex_to_pod(_tx_info.id_hash, mem_tx_hash))
-
+      */
     } // for (size_t i = 0; i < mempool_tx_info.size(); ++i)
 
 
