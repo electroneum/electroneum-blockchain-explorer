@@ -73,7 +73,7 @@ MicroCore::init(const string& _blockchain_path, network_type nt)
 
     // initialize Blockchain object to manage
     // the database.
-    return m_blockchain_storage.init(db, nettype);
+    return m_blockchain_storage.init(db, nettype == cryptonote::network_type::TESTNET);
 }
 
 /**

@@ -112,7 +112,8 @@ set(LIBRARIES
         unbound
         curl
         crypto
-        ssl)
+        ssl
+        ed25519-donna)
 
 if(APPLE)
     set(LIBRARIES ${LIBRARIES} "-framework IOKit")
