@@ -191,7 +191,7 @@ MempoolStatus::read_mempool()
         last_tx.num_nonrct_inputs = sum_data[3];
 
         last_tx.fee_str          = electroneumeg::etn_amount_to_str(_tx_info.fee, "{:0.2f}", false);
-        last_tx.fee_micro_str    = electroneumeg::etn_amount_to_str(_tx_info.fee*1.0e6, "{:02.0f}", false);
+        last_tx.fee_micro_str    = electroneumeg::etn_amount_to_str(_tx_info.fee, "{:0.2f}", false);
         last_tx.payed_for_kB_str = fmt::format("{:0.2f}", payed_for_kB);
         last_tx.payed_for_kB_micro_str = fmt::format("{:02.0f}", payed_for_kB*1e6);
         last_tx.etn_inputs_str   = electroneumeg::etn_amount_to_str(last_tx.sum_inputs , "{:0.2f}");

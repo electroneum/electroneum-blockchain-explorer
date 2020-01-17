@@ -44,7 +44,6 @@
         <h3 style="font-size: 12px; margin-top: 5px; margin-bottom: 3">
             Network difficulty: {{difficulty}}
             | Hard fork: v{{current_hf_version}}
-            | Hash rate: {{hash_rate}}
             | Fee per kB: {{fee_per_kb}}
             | Median block size limit: {{block_size_limit}} kB
             {{^is_current_info}}
@@ -92,7 +91,7 @@
                     <td>{{age}}<!--{{time_delta}}--></td>
                     <td>{{blk_size}}</td>
                     <td><a href="/tx/{{hash}}">{{hash}}</a></td>
-                    <td>{{fee_micro}}</td>
+                    <td>{{tx_fee}}</td>
                     <td>{{sum_outputs_short}}</td>
                     <td>{{no_inputs}}/{{no_outputs}}<!- -/{{pID}}- -></td>
                     <td>{{tx_size_short}}</td>
