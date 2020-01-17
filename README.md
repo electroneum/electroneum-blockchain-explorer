@@ -23,10 +23,24 @@ Note: `develop` branch of the explorer follows `master` branch of the main block
 
 #### Electroneum download and compilation
 
-To download and compile recent Electroneum follow instructions
-in the following link:
+In order for the explorer to compile, you will need to compile the main blockchain code first:
+```bash
+# Change to the home directory for your user (/home/user = ~/). It's important that you use this specific directory.
+cd ~/
 
-https://github.com/electroneum/electroneum/blob/master/README.md
+# Clone recursively for the latest release branch and set up the submodules
+git clone --recursive -b release/3.1.0.0 http://github.com/electroneum/electroneum-blockchain-explorer
+
+# Sanity check
+git submodule init && git submodule update
+
+# Enter the cloned repository
+cd electroneum
+
+# Compile. 
+# The explorer will not compile unless you build within a single build directory
+USE_SINGLE_BUILDDIR=1 make
+```
 
 ##### Compile and run the explorer
 
