@@ -3,7 +3,7 @@ find_package(Boost 1.54 REQUIRED)
 set(mstch_INCLUDE_DIR
       ${PROJECT_SOURCE_DIR}/include CACHE STRING "mstch include directory")
 
-# /home/mwo/crow-monero-test/ext/mstch
+# /home/mwo/crow-electroneum-test/ext/mstch
 message(${PROJECT_SOURCE_DIR})
 #
 include_directories(

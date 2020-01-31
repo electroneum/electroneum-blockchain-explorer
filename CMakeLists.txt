@@ -6,8 +6,7 @@ set(PROJECT_NAME
 
 project(${PROJECT_NAME})
 
-set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_STANDARD 11)
 
 if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj -O3")
@@ -20,12 +19,16 @@ endif()
 
 message(STATUS ELECTRONEUM_DIR ": ${ELECTRONEUM_DIR}")
 
-set(ELECTRONEUM_SOURCE_DIR ${ELECTRONEUM_DIR}
-        CACHE PATH "Path to the root directory for Electroneum")
+if (NOT ELECTRONEUM_SOURCE_DIR)
+    set(ELECTRONEUM_SOURCE_DIR ${ELECTRONEUM_DIR}
+          CACHE PATH "Path to the root directory for Electroneum")
+endif()
 
-# set location of electroneum build tree
-set(ELECTRONEUM_BUILD_DIR ${ELECTRONEUM_SOURCE_DIR}/build/release/
-        CACHE PATH "Path to the build directory for Electroneum")
+if (NOT ELECTRONEUM_BUILD_DIR)
+    # set location of ELECTRONEUM build tree
+    set(ELECTRONEUM_BUILD_DIR ${ELECTRONEUM_SOURCE_DIR}/build/release/
+          CACHE PATH "Path to the build directory for Electroneum")
+endif()
 
 set(MY_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake"
         CACHE PATH "The path to the cmake directory of the current project")
@@ -52,6 +55,8 @@ find_package(Boost COMPONENTS
         date_time
         REQUIRED)
 
+#info https://github.com/arsenm/sanitizers-cmake
+find_package(Sanitizers)
 
 if(APPLE)
     include_directories(/usr/local/opt/openssl/include)
@@ -59,14 +64,22 @@ if(APPLE)
 endif()
 
 
-#if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR WIN32)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR WIN32)
     add_library(unbound STATIC IMPORTED)
     set_property(TARGET unbound PROPERTY IMPORTED_LOCATION ${ELECTRONEUM_BUILD_DIR}/external/unbound/libunbound.a)
-#endif()
+endif()
+
+
 
 # include boost headers
 include_directories(${Boost_INCLUDE_DIRS})
+
+# include ELECTRONEUM
+include_directories(${ELECTRONEUM_SOURCE_DIR}/build)
+
 include_directories("ext/mstch/include")
+include_directories("ext/mstch/include/src")
+include_directories("ext/crow")
 
 # add ext/ subfolder
 add_subdirectory(ext/)
@@ -83,11 +96,14 @@ set(SOURCE_FILES
 add_executable(${PROJECT_NAME}
         ${SOURCE_FILES})
 
+add_sanitizers(${PROJECT_NAME})
+
 create_git_version()
 
 configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates ${CMAKE_CURRENT_BINARY_DIR}/templates)
 configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates/css ${CMAKE_CURRENT_BINARY_DIR}/templates/css)
 configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates/partials ${CMAKE_CURRENT_BINARY_DIR}/templates/partials)
+configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates/js ${CMAKE_CURRENT_BINARY_DIR}/templates/js)
 
 set(LIBRARIES
         myxrm
@@ -98,25 +114,30 @@ set(LIBRARIES
         cryptonote_core
         cryptonote_protocol
         cryptonote_basic
+        multisig
         daemonizer
         cncrypto
         blocks
         lmdb
         ringct
+        ringct_basic
+        device
         common
         mnemonics
-        epee
         easylogging
+        checkpoints
+        version
+        epee
+        sodium
         ${Boost_LIBRARIES}
         pthread
         unbound
         curl
         crypto
         ssl
-        ed25519-donna)
-
+	ed25519-donna)
 if(APPLE)
-    set(LIBRARIES ${LIBRARIES} "-framework IOKit")
+    set(LIBRARIES ${LIBRARIES} "-framework IOKit -framework Foundation")
 else()
     set(LIBRARIES ${LIBRARIES} atomic)
 endif()
@@ -135,5 +156,8 @@ if (WIN32)
 else()
     set(LIBRARIES ${LIBRARIES} dl)
 endif()
+
+find_package(HIDAPI)
+set(LIBRARIES ${LIBRARIES} ${HIDAPI_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
