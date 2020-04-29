@@ -29,13 +29,13 @@ In order for the explorer to compile, you will need to compile the main blockcha
 cd ~/
 
 # Clone recursively for the latest release branch and set up the submodules
-git clone --recursive -b release/3.1.0.0 http://github.com/electroneum/electroneum-blockchain-explorer
-
-# Sanity check
-git submodule init && git submodule update
+git clone --recursive -b release/3.1.0.0 http://github.com/electroneum/electroneum
 
 # Enter the cloned repository
 cd electroneum
+
+# Sanity check (optional)
+git submodule init && git submodule update
 
 # Compile. 
 # The explorer will not compile unless you build within a single build directory
