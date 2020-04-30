@@ -108,8 +108,6 @@ main(int ac, const char* av[])
     bool enable_emission_monitor      {*enable_emission_monitor_opt};
     bool show_cache_times             {*show_cache_times_opt};
 
-    const cryptonote::network_type nettype = testnet ? cryptonote::network_type::TESTNET : cryptonote::network_type::MAINNET;
-
     // set  electroneum log output level
     uint32_t log_level = 0;
     mlog_configure("", true);

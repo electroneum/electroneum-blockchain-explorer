@@ -44,7 +44,7 @@ foreach (l ${LIBS})
 	find_library(Etn_${L}_LIBRARY
 		NAMES ${l}
 		PATHS ${CMAKE_LIBRARY_PATH}
-		PATH_SUFFIXES "/" "/src/${l}" "/src/" "/external/db_drivers/lib${l}" "/lib" "/src/crypto" "/contrib/epee/src" "/external/easylogging++/"
+			PATH_SUFFIXES "/" "/src/${l}" "/src/" "/external/db_drivers/lib${l}" "/lib" "/src/crypto" "/contrib/epee/src" "/external/easylogging++/" "/external/ed25519-donna/"
 		NO_DEFAULT_PATH
 	)
 
@@ -73,5 +73,6 @@ include_directories(
 		${ELECTRONEUM_SOURCE_DIR}/external
 		${ELECTRONEUM_SOURCE_DIR}/build
 		${ELECTRONEUM_SOURCE_DIR}/external/easylogging++
+		${ELECTRONEUM_SOURCE_DIR}/external/ed25519-donna
 		${ELECTRONEUM_SOURCE_DIR}/contrib/epee/include
 		${ELECTRONEUM_SOURCE_DIR}/external/db_drivers/liblmdb)
