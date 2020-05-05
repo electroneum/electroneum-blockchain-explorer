@@ -966,7 +966,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
     };
 
     // median size of 100 blocks
-    context["blk_size_median"] = string {blk_size_median};
+    context["blk_size_median"] = blk_size_median;
 
     string mempool_html {"Cant get mempool_pool"};
 
