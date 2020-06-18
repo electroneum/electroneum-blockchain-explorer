@@ -1,8 +1,30 @@
 
 <div class="center">
-     <h3 style="font-size: 12px; margin-top: 20px">
+    
+     
 
-        Server time: {{server_timestamp}}  | <a href="/txpool">Transaction pool</a>
+        {{#network_info}}
+        {{#emission}}
+        <table class="center net_info" style="padding-top:50px; padding-bottom: 50px;">
+            <tr style="background-color: black; line-height: 1;">
+                <td>v{{current_hf_version}}</td>
+                <td>{{fee_per_kb}} ETN</td>
+                <td>{{block_size_limit}} kB</td>
+                <td>21Bn</td>
+                <td>{{tx_count}}</td>
+            </tr>
+            <tr style="line-height: 1;">
+                <td>Blockchain Version</td>
+                <td>Fee per kB</td>
+                <td>Block Size Limit</td>
+                <td>Max ETN Supply</td>
+                <td>Transactions since Genesis</td>
+            </tr>
+        </table>
+        {{/emission}}
+        {{/network_info}}
+
+        <h3 style="font-size: 17px; font-weight: 100; margin-top: 20px">
          {{#enable_pusher}}
             | <a href="/rawtx">Transaction pusher </a>
          {{/enable_pusher}}
@@ -40,54 +62,38 @@
         </h3>
 
 
-    {{#network_info}}
-        <h3 style="font-size: 12px; margin-top: 5px; margin-bottom: 3">
-            Network difficulty: {{difficulty}}
-            | Hard fork: v{{current_hf_version}}
-            | Fee per kB: {{fee_per_kb}}
-            | Median block size limit: {{block_size_limit}} kB
-            {{^is_current_info}}
-            | Data from {{age}} {{age_format}} ago
-            {{/is_current_info}}
-        </h3>
-    {{/network_info}}
-
-    {{#emission}}
-        <h3 style="font-size: 12px; margin-top: 2px">
-            Electroneum emission (fees) is {{amount}} ({{fee_amount}}) as of {{blk_no}} block
-        </h3>
-    {{/emission}}
-
-
 </div>
 
     {{{mempool_info}}}
 
     {{#is_page_zero}}
-      <h2 style="margin-bottom: 0px">Transactions in the last {{no_of_last_blocks}} blocks</h2>
+      <h2 style="margin-bottom: 0px; font-size: 28px;">Transactions in the last {{no_of_last_blocks}} blocks</h2>
     {{/is_page_zero}}
     {{^is_page_zero}}
-      <h2 style="margin-bottom: 0px">Transactions in older blocks<!--(height: {{height}})--></h2>
+      <h2 style="margin-bottom: 0px; font-size: 28px;">Transactions in older blocks<!--(height: {{height}})--></h2>
     {{/is_page_zero}}
 
-    <h4 style="font-size: 14px; margin-top: 0px">(Median size of 100 blocks: {{blk_size_median}} kB)</h4>
+    <h4 style="font-size: 15px; font-weight: 100; margin-top: 0px">(Median size of the last 100 blocks: {{blk_size_median}} kB)</h4>
 
     <div class="center">
 
             <table class="center">
                 <tr>
-                    <td>height</td>
-                    <td>age {{age_format}}<!--(Δm)--></td>
-                    <td>size [kB]<!--(Δm)--></td>
-                    <td>transaction hash</td>
-                    <td>fee</td>
-                    <td>outputs</td>
-                    <td>in/out<!- -/pID- -></td>
-                    <td>tx size [kB]</td>
+                    <td>Validator</td>
+                    <td>Block Height</td>
+                    <td>Age {{age_format}}<!--(Δm)--></td>
+                    <td>Size [kB]<!--(Δm)--></td>
+                    <td>Transaction Hash</td>
+                    <td>Fee</td>
+                    <td>Outputs</td>
+                    <td>In/Out<!- -/pID- -></td>
+                    <td>Tx Size [kB]</td>
+                    <td></td>
                 </tr>
                 {{#txs}}
                 <tr>
-                    <td><a href="/block/{{height}}">{{height}}</a></td>
+                    <td><a href="{{v_link}}" rel="noopener noreferrer" target="_blank"><b>{{v_name}}</b></a></td>
+                    <td><a href="/block/{{height}}"><b>{{height}}</b></a></td>
                     <td>{{age}}<!--{{time_delta}}--></td>
                     <td>{{blk_size}}</td>
                     <td><a href="/tx/{{hash}}">{{hash}}</a></td>
@@ -95,6 +101,7 @@
                     <td>{{sum_outputs_short}}</td>
                     <td>{{no_inputs}}/{{no_outputs}}<!- -/{{pID}}- -></td>
                     <td>{{tx_size_short}}</td>
+                    <td><div title="Top Up" class="{{top_up}}"></div></td>
                 </tr>
                 {{/txs}}
             </table>

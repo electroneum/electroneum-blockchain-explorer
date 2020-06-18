@@ -1,17 +1,19 @@
-<h2 style="margin-bottom: 0px">
-   Transaction pool
-</h2>
-<h4 style="font-size: 12px; margin-top: 0px">(no of txs: {{mempool_size}}, size: {{mempool_size_kB}} kB, updated every {{ mempool_refresh_time }} seconds)</h4>
 <div class="center">
+
+    <h2 style="margin-bottom: 0px; font-size: 28px;">
+        Transaction pool
+     </h2>
+     <h4 style="font-size: 15px; font-weight: 100; margin-top: 0px">(Transactions waiting to be confirmed: <a href="/txpool">{{mempool_size}} (View All)</a> | Size: {{mempool_size_kB}} kB)</h4>
+     
     
-      <table class="center" style="width:80%">
+      <table class="center">
             <tr>
-                <td>age [h:m:s]</td>
-                <td>transaction hash</td>
-                <td>fee</td>
+                <td>Age [h:m:s]</td>
+                <td>Transaction Hash</td>
+                <td>Fee</td>
                 <!--<td>outputs</td>-->
-                <td>in/out<!- -/pID- -></td>
-                <td>tx size [kB]</td>
+                <td>In/Out<!- -/pID- -></td>
+                <td>Tx Size [kB]</td>
             </tr>
             {{#mempooltxs}}
             <tr>
