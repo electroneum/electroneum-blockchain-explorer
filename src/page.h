@@ -608,6 +608,8 @@ string
 index2(uint64_t page_no = 0, bool refresh_page = false)
 {
 
+    mcore->validators->on_idle();
+
     // we get network info, such as current hash rate
     // but since this makes a rpc call to deamon, we make it as an async
     // call. this way we dont have to wait with execution of the rest of the
@@ -6868,42 +6870,10 @@ get_tx_details(const transaction& tx,
         txd.no_confirmations = bc_height - (blk_height);
     }
 
-    crypto::hash blk_hash = core_storage->get_block_id_by_height(txd.blk_height);
+    electroneum::basic::Validator v = core_storage->get_validator_by_height(blk_height);
 
-    std::string v_link, v_name;
-    std::string signatory = core_storage->get_block_signatory_by_height(blk_height);
-
-    if(signatory == "BAC51CD31793823CA629B927EDF1D158A53135832CC001AA32EE58D8F2B48A75") {
-        v_link = "https://etndonate.com/ngos-charities/childrens-fund-malawi";
-        v_name = "Childrens Fund Malawi";
-
-    } else if(signatory == "F9096A9033DE7970DBEEEBAA286BA2A92E355CE595D6F927D08D6A4B21DC740B") {
-        v_link = "https://etndonate.com/ngos-charities/wonder-foundation";
-        v_name = "Wonder Foundation";
-
-    } else if(signatory == "CE2B2CB2ACA8864BE7E790602BDD712404334BE8A3D65A8D6981EFEA44CDFED2") {
-        v_link = "https://etndonate.com/ngos-charities/ubuntu-pathways";
-        v_name = "Ubuntu Pathways";
-
-    } else if(signatory == "147A3603C27F13E48E7AA3A8ED9A1B9B39CEB1C2FF8958554998278E9A87A4F0") {
-        v_link = "https://etndonate.com/ngos-charities/spiritual-chords";
-        v_name = "Spiritual Chords";
-
-    } else if(signatory == "0D378A4A3DBC0F2AB3F15C03CD2261C4F64B5C873BEB5FA6AD51F0AC57B4305B") {
-        v_link = "https://etndonate.com/ngos-charities/goodwill-caravan";
-        v_name = "Goodwill Caravan";
-
-    } else if(signatory == "CE2B2CB2ACA8864BE7E790602BDD712404334BE8A3D65A8D6981EFEA44CDFED2") {
-        v_link = "https://etndonate.com/ngos-charities/tedi";
-        v_name = "TEDI";
-        
-    } else {
-        v_link = "";
-        v_name = "?";
-    }
-
-    txd.v_link = v_link;
-    txd.v_name = v_name;
+    txd.v_name = v.getName().empty() ? "?" : v.getName();
+    txd.v_link = v.getPageLink().empty() ? "#" : v.getPageLink();
 
     if(txd.payment_id_as_ascii.find("TopUp") != std::string::npos) {
         txd.topUp = "topup";

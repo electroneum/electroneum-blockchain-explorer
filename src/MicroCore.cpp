@@ -67,7 +67,19 @@ MicroCore::init(const string& _blockchain_path, network_type nt)
 
     // initialize Blockchain object to manage
     // the database.
-    return m_blockchain_storage.init(db, nettype);
+    if(m_blockchain_storage.init(db, nettype)) {
+        validators = std::unique_ptr<electroneum::basic::Validators>(new electroneum::basic::Validators(*db, nullptr, nt == TESTNET));
+        m_blockchain_storage.set_validators_list_instance(validators);
+
+        if(m_blockchain_storage.get_current_blockchain_height() >= ((nt == TESTNET ? 446674 : 589169) - 720 )) { //V8 Height - 1 day
+            validators->enable();
+            validators->on_idle();
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 /**
