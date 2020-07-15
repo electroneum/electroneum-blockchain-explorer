@@ -959,6 +959,16 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
         current_network_info.current = true;
     }
 
+    MempoolStatus::network_info local_copy_network_info
+                = MempoolStatus::current_network_info;
+
+    std::string tx_count = std::to_string(local_copy_network_info.tx_count);
+    int insertPosition = tx_count.length() - 3;
+    while (insertPosition > 0) {
+        tx_count.insert(insertPosition, ",");
+        insertPosition-=3;
+    }
+
     context["network_info"] = mstch::map {
             {"difficulty"        , make_difficulty(current_network_info.difficulty, current_network_info.difficulty_top64).str()},
             {"hash_rate"         , hash_rate},
@@ -973,6 +983,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
             {"current_hf_version", current_network_info.current_hf_version},
             {"age"               , network_info_age.first},
             {"age_format"        , network_info_age.second},
+            {"tx_count"  , tx_count}
     };
 
     // median size of 100 blocks
@@ -999,23 +1010,12 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
         CurrentBlockchainStatus::Emission current_values
                 = CurrentBlockchainStatus::get_emission();
 
-        MempoolStatus::network_info local_copy_network_info
-                = MempoolStatus::current_network_info;
-
         string emission_blk_no   = std::to_string(current_values.blk_no - 1);
         string emission_coinbase = etn_amount_to_str_formated(current_values.coinbase, "{:0.2f}");
 
-        std::string tx_count = std::to_string(local_copy_network_info.tx_count);
-        int insertPosition = tx_count.length() - 3;
-        while (insertPosition > 0) {
-            tx_count.insert(insertPosition, ",");
-            insertPosition-=3;
-        }
-
         context["emission"] = mstch::map {
                 {"blk_no"    , emission_blk_no},
-                {"amount"    , emission_coinbase},
-                {"tx_count"  , tx_count}
+                {"amount"    , emission_coinbase}
         };
     }
     else
