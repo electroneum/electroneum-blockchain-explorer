@@ -294,6 +294,36 @@ etn_amount_to_str(const uint64_t& etn_amount,
     return amount_str;
 }
 
+static
+string
+etn_amount_to_str_formated(const uint64_t& etn_amount,
+                  string _format="{:0.2f}",
+                  bool zero_to_question_mark=true)
+{
+    string amount_str = "?";
+
+    if (!zero_to_question_mark)
+    {
+        amount_str = fmt::format(_format, ETN_AMOUNT(etn_amount));
+    }
+    else
+    {
+        if (etn_amount > 0 && zero_to_question_mark == true)
+        {
+            amount_str = fmt::format(_format, ETN_AMOUNT(etn_amount));
+        }
+    }
+
+    std::string numWithCommas = amount_str;
+    int insertPosition = numWithCommas.length() - (boost::algorithm::contains(numWithCommas, ".") ? 6 : 3);
+    while (insertPosition > 0) {
+        numWithCommas.insert(insertPosition, ",");
+        insertPosition-=3;
+    }
+
+    return numWithCommas;
+}
+
 bool
 is_output_ours(const size_t& output_index,
                const transaction& tx,

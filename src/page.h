@@ -252,6 +252,9 @@ struct tx_details
     uint64_t size;
     uint64_t blk_height;
     size_t   version;
+    std::string v_link;
+    std::string v_name;
+    std::string topUp = "";
 
     bool has_additional_tx_pub_keys {false};
 /*
@@ -280,11 +283,11 @@ struct tx_details
     get_mstch_map() const
     {
 
-        string mixin_str {"N/A"};
-        string fee_str {"N/A"};
-        string fee_short_str {"N/A"};
+        string mixin_str {""};
+        string fee_str {""};
+        string fee_short_str {""};
         string payed_for_kB_str {""};
-        string fee_micro_str {"N/A"};
+        string fee_micro_str {""};
         string payed_for_kB_micro_str {""};
 
         const double& etn_amount = ETN_AMOUNT(fee);
@@ -335,7 +338,10 @@ struct tx_details
                 {"unlock_time"       , unlock_time},
                 {"tx_size"           , fmt::format("{:0.2f}", tx_size)},
                 {"tx_size_short"     , fmt::format("{:0.2f}", tx_size)},
-                {"has_add_pks"       , !additional_pks.empty()}
+                {"has_add_pks"       , !additional_pks.empty()},
+                {"v_link"            , v_link},
+                {"v_name"            , v_name},
+                {"top_up"            , topUp}
         };
 
 
@@ -601,6 +607,8 @@ page(MicroCore* _mcore,
 string
 index2(uint64_t page_no = 0, bool refresh_page = false)
 {
+
+    mcore->validators->on_idle();
 
     // we get network info, such as current hash rate
     // but since this makes a rpc call to deamon, we make it as an async
@@ -871,6 +879,8 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
                     txd_map["height"]     = string("");
                     txd_map["age"]        = string("");
                     txd_map["blk_size"]   = string("");
+                    txd_map["v_link"]     = string("");
+                    txd_map["v_name"]     = string("");
                 }
 
                 txd_pairs.emplace_back(txd.hash, txd_map);
@@ -949,6 +959,16 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
         current_network_info.current = true;
     }
 
+    MempoolStatus::network_info local_copy_network_info
+                = MempoolStatus::current_network_info;
+
+    std::string tx_count = std::to_string(local_copy_network_info.tx_count);
+    int insertPosition = tx_count.length() - 3;
+    while (insertPosition > 0) {
+        tx_count.insert(insertPosition, ",");
+        insertPosition-=3;
+    }
+
     context["network_info"] = mstch::map {
             {"difficulty"        , make_difficulty(current_network_info.difficulty, current_network_info.difficulty_top64).str()},
             {"hash_rate"         , hash_rate},
@@ -963,6 +983,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
             {"current_hf_version", current_network_info.current_hf_version},
             {"age"               , network_info_age.first},
             {"age_format"        , network_info_age.second},
+            {"tx_count"  , tx_count}
     };
 
     // median size of 100 blocks
@@ -990,13 +1011,11 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
                 = CurrentBlockchainStatus::get_emission();
 
         string emission_blk_no   = std::to_string(current_values.blk_no - 1);
-        string emission_coinbase = etn_amount_to_str(current_values.coinbase, "{:0.3f}");
-        string emission_fee      = etn_amount_to_str(current_values.fee, "{:0.3f}");
+        string emission_coinbase = etn_amount_to_str_formated(current_values.coinbase, "{:0.2f}");
 
         context["emission"] = mstch::map {
                 {"blk_no"    , emission_blk_no},
-                {"amount"    , emission_coinbase},
-                {"fee_amount", emission_fee}
+                {"amount"    , emission_coinbase}
         };
     }
     else
@@ -6851,6 +6870,15 @@ get_tx_details(const transaction& tx,
         txd.no_confirmations = bc_height - (blk_height);
     }
 
+    electroneum::basic::Validator v = core_storage->get_validator_by_height(blk_height);
+
+    txd.v_name = v.getName().empty() ? "?" : v.getName();
+    txd.v_link = v.getPageLink().empty() ? "#" : v.getPageLink();
+
+    if(txd.payment_id_as_ascii.find("TopUp") != std::string::npos) {
+        txd.topUp = "topup";
+    }
+    
     return txd;
 }
 

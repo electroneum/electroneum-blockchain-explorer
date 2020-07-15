@@ -75,6 +75,8 @@ namespace electroneumeg
         get_device() const;
 
         virtual ~MicroCore();
+
+        unique_ptr <electroneum::basic::Validators> validators;
     };
 
 
