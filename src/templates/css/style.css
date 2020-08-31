@@ -111,6 +111,7 @@ form {
     border: solid 1px #0a0a0a;
     background-color: #242424;
     transition: box-shadow 0.3s, border 0.3s;
+    color: white;
 }
 .style-1 input[type="text"]:focus,
 .style-1 input[type="text"].focus {
