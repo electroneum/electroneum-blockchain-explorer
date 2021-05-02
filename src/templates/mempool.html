@@ -1,40 +1,80 @@
-<div class="center">
-
-    <h2 style="margin-bottom: 0px; font-size: 28px;">
-        Transaction Pool
-     </h2>
-     <h4 style="font-size: 15px; font-weight: 100; margin-top: 0px">(Transactions waiting to be confirmed: {{mempool_size}} | Size: {{mempool_size_kB}} kB)</h4>
-     
-    
-      <table class="center">
-            <tr>
-                <td>Age [h:m:s]</td>
-                <td>Transaction Hash</td>
-                <td>Fee</td>
-                <!--<td>outputs</td>-->
-                <td>In/Out<!- -/pID- -></td>
-                <td>Tx Size [kB]</td>
-            </tr>
-            {{#mempooltxs}}
-            <tr>
-                <td>{{age}}</td>
-                <td><a href="/tx/{{hash}}">{{hash}}</a></td>
-                <td>{{fee}}</td>
-                <!--<td>{{etn_outputs}}</td>-->
-                <td>{{no_inputs}}/{{no_outputs}}<!- -/{{pID}}- -></td>
-                <td>{{txsize}}</td>
-            </tr>
-            {{/mempooltxs}}
-        </table>
-
-    {{^mempool_fits_on_front_page}}
-      {{#partial_mempool_shown}}
-      <div class="center" style="text-align: center; margin-bottom: 10px">
-          <a href="/txpool">Only {{no_of_mempool_tx_of_frontpage}} transactions shown. Click here to see all of them.</a>
-      </div>
-      {{/partial_mempool_shown}}
-
-    {{/mempool_fits_on_front_page}}
-
-
+{{^mempool_full_page}}
+<div class="row" xmlns="http://www.w3.org/1999/html">
+    <ol class="breadcrumb bm">
+        <li><a href="/">Home</a></li>
+        <li>Mempool</li>
+    </ol>
 </div>
+<div class="row">
+    <div class="panel panel-bm indexBlockList">
+        {{/mempool_full_page}}
+        {{#mempool_full_page}}
+        <div class="col-xs-6" style="padding-left: 0; padding-right: 10px;">
+            <div class="panel panel-bm indexBlockList" style="height: 526px;">
+                {{/mempool_full_page}}
+
+                <div class="panel-heading">
+                    <div class="panel-heading-corner">
+                        {{#mempool_full_page}}
+                        <a href="/txpool">
+                            Transactions: {{mempool_size}} | Size: {{mempool_size_kB}} kB
+                            <i class="icon-arrow-right"></i>
+                        </a>
+                        {{/mempool_full_page}}
+                        {{^mempool_full_page}}
+                        Transactions: {{mempool_size}} | Size: {{mempool_size_kB}} kB
+                        {{/mempool_full_page}}
+                    </div>
+                    <div class="panel-heading-title">
+                        Mempool
+                    </div>
+                </div>
+                {{#mempool_full_page}}
+                <div class="panel-body">
+                    {{/mempool_full_page}}
+                    {{^mempool_full_page}}
+                    <div class="panel-body" style="min-height: 500px;">
+                        {{/mempool_full_page}}
+                        <div class="pool-panel pool-panel-share">
+                            <table class="table table-condensed">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-center" width="85px">Time</th>
+                                        <th class="text-center" width="85px">Hash</th>
+                                        <th class="text-center" width="85px">Fee</th>
+                                        {{^mempool_full_page}}
+                                        <th class="text-center" width="85px">Inputs/Outputs</th>
+                                        {{/mempool_full_page}}
+                                        <th class="text-center" width="85px">Size</th>
+                                    </tr>
+                                    {{#mempooltxs}}
+                                    <tr class="js-realtime-row">
+                                        <td class="text-center geryColor timeago" width="15px"
+                                            style="vertical-align: middle;padding-right: 8px">{{timestamp_no}}</td>
+                                        <td class="text-center indexBlockList-blockhash" style="min-width:130px;">
+                                            {{#mempool_full_page}}
+                                            <a class="txHash" href="/tx/{{hash}}">{{hash}}</a>
+                                            {{/mempool_full_page}}
+                                            {{^mempool_full_page}}
+                                            <a href="/tx/{{hash}}">{{hash}}</a>
+                                            {{/mempool_full_page}}
+                                        </td>
+                                        <td width="140px">
+                                            {{fee}} <span class="text-muted">ETN</span>
+                                        </td>
+                                        {{^mempool_full_page}}
+                                        <td class="text-center geryColor" style="position: relative">
+                                            {{no_inputs}}/{{no_outputs}}
+                                        </td>
+                                        {{/mempool_full_page}}
+                                        <td class="text-center geryColor" style="position: relative">
+                                            {{txsize}} <span class="text-muted">kB</span>
+                                        </td>
+                                    </tr>
+                                    {{/mempooltxs}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>

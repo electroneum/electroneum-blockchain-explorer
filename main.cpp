@@ -609,6 +609,44 @@ main(int ac, const char* av[])
         return myetn::htmlresponse(etnblocks.mempool(true));
     });
 
+    CROW_ROUTE(app, "/address/<string>")
+    ([&](string address) -> myetn::htmlresponse
+     {
+
+         address = remove_bad_chars(address);
+         // parse string representing given electroneum address
+         cryptonote::address_parse_info address_info;
+
+         cryptonote::network_type nettype_addr {cryptonote::network_type::MAINNET};
+
+         if (!electroneumeg::parse_str_address(address, address_info, nettype_addr))
+         {
+           cerr << "Cant parse string address: " << address << endl;
+           return string("Cant parse address (probably incorrect format): ")
+                  + address;
+         }
+         return myetn::htmlresponse(etnblocks.show_address_details(address_info));
+     });
+
+    CROW_ROUTE(app, "/address/<string>/page/<uint>")
+    ([&](string address, size_t page_no) -> myetn::htmlresponse
+     {
+
+        address = remove_bad_chars(address);
+         // parse string representing given electroneum address
+         cryptonote::address_parse_info address_info;
+
+         cryptonote::network_type nettype_addr {cryptonote::network_type::MAINNET};
+
+         if (!electroneumeg::parse_str_address(address, address_info, nettype_addr))
+         {
+           cerr << "Cant parse string address: " << address << endl;
+           return string("Cant parse address (probably incorrect format): ")
+                  + address;
+         }
+         return myetn::htmlresponse(etnblocks.show_address_details(address_info, nettype_addr, page_no));
+     });
+
 //    CROW_ROUTE(app, "/altblocks")
 //    ([&](const crow::request& req) {
 //        return etnblocks.altblocks();
@@ -619,6 +657,21 @@ main(int ac, const char* av[])
         string text = "User-agent: *\n"
                       "Disallow: ";
         return text;
+    });
+
+    CROW_ROUTE(app, "/css/<string>")
+    ([&](std::string css) {
+        return electroneumeg::read("./templates/css/" + css);
+    });
+
+    CROW_ROUTE(app, "/imgs/<string>")
+    ([&](std::string img) {
+        return electroneumeg::read("./templates/imgs/" + img);
+    });
+
+    CROW_ROUTE(app, "/fonts/<string>")
+    ([&](std::string font) {
+        return electroneumeg::read("./templates/fonts/" + font);
     });
 
     if (enable_js)

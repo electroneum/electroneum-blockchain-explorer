@@ -346,13 +346,60 @@ array<uint64_t, 4>
 summary_of_in_out_rct(
         const transaction& tx,
         vector<pair<txout_to_key, uint64_t>>& output_pub_keys,
-        vector<txin_to_key>& input_key_imgs)
+        vector<txin_to_key>& input_key_imgs,
+        vector<pair<txout_to_key_public, uint64_t>>& output_public,
+        vector<txin_to_key_public>& input_public)
 {
 
     uint64_t etn_outputs       {0};
     uint64_t etn_inputs        {0};
     uint64_t mixin_no          {0};
     uint64_t num_nonrct_inputs {0};
+
+    if(tx.version >= 3)
+    {
+      for (const tx_out& txout: tx.vout)
+      {
+        if (txout.target.type() != typeid(txout_to_key_public))
+        {
+          continue;
+        }
+
+        // get tx input key
+        const txout_to_key_public& txout_key
+                = boost::get<cryptonote::txout_to_key_public>(txout.target);
+
+        output_public.push_back(make_pair(txout_key, txout.amount));
+
+        etn_outputs += txout.amount;
+      }
+
+      size_t input_no = tx.vin.size();
+      for (size_t i = 0; i < input_no; ++i)
+      {
+
+        if(tx.vin[i].type() != typeid(cryptonote::txin_to_key_public))
+        {
+          continue;
+        }
+
+        // get tx input key
+        const cryptonote::txin_to_key_public& tx_in_to_key
+                = boost::get<cryptonote::txin_to_key_public>(tx.vin[i]);
+
+        etn_inputs += tx_in_to_key.amount;
+
+        if (tx_in_to_key.amount != 0)
+        {
+          ++num_nonrct_inputs;
+        }
+
+        input_public.push_back(tx_in_to_key);
+      }
+
+      return {etn_outputs, etn_inputs, mixin_no, num_nonrct_inputs};
+
+    }
 
 
     for (const tx_out& txout: tx.vout)
@@ -1297,6 +1344,21 @@ cryptonote::difficulty_type
 make_difficulty(uint64_t low, uint64_t high)
 {
     return (cryptonote::difficulty_type(high) << 64) + low;
+}
+
+crypto::public_key addKeys(const crypto::public_key &A, const crypto::public_key &B)
+{
+  public_key AB;
+  ge_p3 B2, A2;
+  assert(ge_frombytes_vartime(&B2, (const unsigned char*)&B) == 0 && ge_frombytes_vartime(&A2, (const unsigned char*)&A) == 0);
+  ge_cached tmp2;
+  ge_p3_to_cached(&tmp2, &B2);
+  ge_p1p1 tmp3;
+  ge_add(&tmp3, &A2, &tmp2);
+  ge_p1p1_to_p3(&A2, &tmp3);
+  ge_p3_tobytes((unsigned char*)&AB, &A2);
+
+  return AB;
 }
 
 }

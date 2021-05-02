@@ -242,6 +242,53 @@ MicroCore::get_blk_timestamp(uint64_t blk_height)
     return blk.timestamp;
 }
 
+std::vector<address_outputs>
+MicroCore::get_addr_outputs(const public_key &view_key, const public_key &spend_key)
+{
+  std::vector<address_outputs> res;
+  try
+  {
+    public_key combined_key = electroneumeg::addKeys(view_key, spend_key);
+    res = m_blockchain_storage.get_db().get_addr_output_all(combined_key);
+  }
+  catch (const DB_ERROR& e)
+  {
+    cerr << "Blockchain access error when getting address output indexes "
+         << e.what()
+         << endl;
+  }
+  catch (...)
+  {
+    cerr << "Something went terribly wrong when getting address output indexes "
+         << endl;
+  }
+
+  return res;
+}
+
+cryptonote::tx_input_t
+MicroCore::get_tx_input(const crypto::hash tx_hash, const uint64_t relative_out_index) 
+{
+    tx_input_t res = tx_input_t();
+    try
+    {
+        res = m_blockchain_storage.get_db().get_tx_input(tx_hash, relative_out_index);
+    }
+    catch(const DB_ERROR& e)
+    {
+        cerr << "Blockchain access error when getting tx input " << epee::string_tools::pod_to_hex(tx_hash)
+         << e.what()
+         << endl;
+    }
+    catch (...)
+    {
+        cerr << "Something went terribly wrong when getting tx input "
+            << endl;
+    }
+
+    return res;
+    
+}
 
 /**
  * De-initialized Blockchain.
