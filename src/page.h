@@ -972,7 +972,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
     context["network_info"] = mstch::map {
             {"difficulty"        , make_difficulty(current_network_info.difficulty, current_network_info.difficulty_top64).str()},
             {"hash_rate"         , hash_rate},
-            {"fee_per_kb"        , print_money(current_network_info.fee_per_kb)},
+            {"fee_per_kb"        , print_etn(current_network_info.fee_per_kb)},
             {"alt_blocks_no"     , current_network_info.alt_blocks_count},
             {"have_alt_block"    , (current_network_info.alt_blocks_count > 0)},
             {"tx_pool_size"      , current_network_info.tx_pool_size},
