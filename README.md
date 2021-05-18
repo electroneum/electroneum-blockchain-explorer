@@ -64,7 +64,7 @@ mkdir build && cd build
 cmake ..
 
 # compile
-make
+cd .. && make
 ```
 
 
