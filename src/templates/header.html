@@ -119,9 +119,11 @@
             });
 
             $(".time-localization").each(function (i, d) {
-                var d = new Date($(this).text());
-                $(this).text(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toLocaleString());
-                $(this).css("opacity", 1);
+                if(Date.parse($(this).text())) {
+                    var d = new Date($(this).text());
+                    $(this).text(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toLocaleString());
+                    $(this).css("opacity", 1);
+                }
             });
         });
 

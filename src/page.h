@@ -457,7 +457,8 @@ struct tx_details
                   {"amount"         , electroneumeg::etn_amount_to_str(output_public.at(i).second)},
                   {"to"             , to},
                   {"is_change"      , is_change},
-                  {"is_current_etn_address", combined_key == cKey}
+                  {"is_current_etn_address", combined_key == cKey},
+                  {"is_stealth",    false}
           });
         }
       }
@@ -471,7 +472,8 @@ struct tx_details
 
           tx_outputs.push_back(mstch::map {
                   {"amount"         , electroneumeg::etn_amount_to_str(output_pub_keys.at(i).second)},
-                  {"to"             , pod_to_hex(txout_key.key)}
+                  {"to"             , pod_to_hex(txout_key.key)},
+                  {"is_stealth",    true}
           });
         }
       }
@@ -518,7 +520,8 @@ struct tx_details
                     {"amount"       , amount},
                     {"is_coinbase"  , false},
                     {"input_signature" ,  print_sig(signatures.at(i).at(0))},
-                    {"is_current_etn_address", combined_key == cKey}
+                    {"is_current_etn_address", combined_key == cKey},
+                    {"is_stealth",    false}
             });
           }
         }
@@ -530,6 +533,7 @@ struct tx_details
                   {"index"         , i},
                   {"from"         , pod_to_hex(input_key_imgs.at(i).k_image)},
                   {"amount"         , electroneumeg::etn_amount_to_str(input_key_imgs.at(i).amount)},
+                  {"is_stealth",    true}
           });
         }
       }
@@ -1816,19 +1820,9 @@ show_tx(string tx_hash_str, uint16_t with_ring_signatures = 0, bool refresh_page
     boost::get<mstch::array>(context["txs"]).push_back(tx_context);
 
     map<string, string> partials;
-    if(tx.version >= 3) {
-      partials.insert({
-              {"tx_details", template_file["tx_details_v3"]},
-      });
-    } else if(tx.version == 2) {
-      partials.insert({
-              {"tx_details", template_file["tx_details_v2"]},
-      });
-    } else {
-      partials.insert({
-              {"tx_details", template_file["tx_details_v3"]},
-      });
-    }
+    partials.insert({
+            {"tx_details", template_file["tx_details_v3"]},
+    });
 
 
     add_css_style(context);
@@ -6669,10 +6663,6 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
     // make timescale maps for mixins in input
     for (const txin_to_key &in_key: txd.input_key_imgs)
     {
-
-        if (show_part_of_inputs && (input_idx > max_no_of_inputs_to_show))
-            break;
-
         // get absolute offsets of mixins
         std::vector<uint64_t> absolute_offsets
                 = cryptonote::relative_output_offsets_to_absolute(
@@ -6985,37 +6975,39 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
 
     uint64_t outputs_etn_sum {0};
 
-    for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
+    if(tx.version == 1) 
     {
-
-        // total number of ouputs in the blockchain for this amount
-        uint64_t num_outputs_amount = core_storage->get_db()
-                .get_num_outputs(outp.second);
-
-        string out_amount_index_str {"N/A"};
-
-        // outputs in tx in them mempool dont have yet global indices
-        // thus for them, we print N/A
-        if (!out_amount_indices.empty())
+        for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
         {
-            out_amount_index_str
-                    = std::to_string(out_amount_indices.at(output_idx));
-        }
 
-        outputs_etn_sum += outp.second;
+            // total number of ouputs in the blockchain for this amount
+            uint64_t num_outputs_amount = core_storage->get_db()
+                    .get_num_outputs(outp.second);
 
-        outputs.push_back(mstch::map {
-                {"out_pub_key"           , pod_to_hex(outp.first.key)},
-                {"amount"                , electroneumeg::etn_amount_to_str(outp.second)},
-                {"amount_idx"            , out_amount_index_str},
-                {"num_outputs"           , num_outputs_amount},
-                {"unformated_output_idx" , output_idx},
-                {"output_idx"            , fmt::format("{:02d}", output_idx++)},
-                {"to"           , pod_to_hex(outp.first.key)},
-        });
+            string out_amount_index_str {"N/A"};
 
-    } //  for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
+            // outputs in tx in them mempool dont have yet global indices
+            // thus for them, we print N/A
+            if (!out_amount_indices.empty())
+            {
+                out_amount_index_str
+                        = std::to_string(out_amount_indices.at(output_idx));
+            }
 
+            outputs_etn_sum += outp.second;
+
+            outputs.push_back(mstch::map {
+                    {"out_pub_key"           , pod_to_hex(outp.first.key)},
+                    {"amount"                , electroneumeg::etn_amount_to_str(outp.second)},
+                    {"amount_idx"            , out_amount_index_str},
+                    {"num_outputs"           , num_outputs_amount},
+                    {"unformated_output_idx" , output_idx},
+                    {"output_idx"            , fmt::format("{:02d}", output_idx++)},
+                    {"to"           , pod_to_hex(outp.first.key)},
+            });
+
+        } //  for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
+    }
 
     if(tx.version >= 2) {
 
@@ -7046,6 +7038,8 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
                 {"spent_tx_index" , std::to_string(spent_tx_in.in_index)}
         });
       }
+
+      context["outputs_no"] = std::to_string(tx.vout.size());
     }
 
     context["outputs_etn_sum"] = electroneumeg::etn_amount_to_str(outputs_etn_sum);
