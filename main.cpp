@@ -314,10 +314,21 @@ main(int ac, const char* av[])
         return myetn::htmlresponse(etnblocks.show_block(block_height));
     });
 
+    CROW_ROUTE(app, "/block/<uint>/page/<uint>")
+    ([&](size_t block_height, size_t page_no) {
+        return myetn::htmlresponse(etnblocks.show_block(block_height, page_no));
+    });
+
     CROW_ROUTE(app, "/block/<string>")
     ([&](string block_hash) {
         return myetn::htmlresponse(
                 etnblocks.show_block(remove_bad_chars(block_hash)));
+    });
+
+    CROW_ROUTE(app, "/block/<string>/page/<uint>")
+    ([&](string block_hash, size_t page_no) {
+        return myetn::htmlresponse(
+                etnblocks.show_block(remove_bad_chars(block_hash), page_no));
     });
 
     CROW_ROUTE(app, "/tx/<string>")

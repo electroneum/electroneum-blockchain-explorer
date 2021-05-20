@@ -1389,7 +1389,7 @@ altblocks()
 
 
 string
-show_block(uint64_t _blk_height)
+show_block(uint64_t _blk_height, size_t page_no = 1)
 {
 
     // get block at the given height i
@@ -1524,8 +1524,24 @@ show_block(uint64_t _blk_height)
     // timescale representation for each tx in the block
     vector<string> mixin_timescales_str;
 
-    // for each transaction in the block
-    for (size_t i = 0; i < blk.tx_hashes.size(); ++i)
+    // number of txs to show
+    uint64_t no_of_last_txs = blk.tx_hashes.size() > 0 ? std::min(10, (int)blk.tx_hashes.size()) : 1;
+    uint64_t total_page_no = (blk.tx_hashes.size() / no_of_last_txs) > 1 ? (blk.tx_hashes.size() / no_of_last_txs) + 1 : 1;
+
+    context.emplace("page_no", page_no);
+    context.emplace("total_page_no", total_page_no);
+    context.emplace("is_page_zero", page_no == 1);
+    context.emplace("is_last_page", page_no == total_page_no);
+    context.emplace("no_of_last_txs", no_of_last_txs);
+    context.emplace("next_page", (page_no + 1));
+    context.emplace("prev_page", (page_no > 1 ? page_no - 1 : 1));
+
+    int64_t start_index = blk.tx_hashes.size() - no_of_last_txs * (page_no);
+    start_index = start_index < 0 ? 0 : start_index;
+    int64_t end_index = start_index + no_of_last_txs - 1;
+    int64_t i = end_index;
+
+    while (!blk.tx_hashes.empty() && i >= start_index)
     {
         // get transaction info of the tx in the mempool
         const crypto::hash& tx_hash = blk.tx_hashes.at(i);
@@ -1552,6 +1568,14 @@ show_block(uint64_t _blk_height)
 
         // add tx details mstch map to context
         txs.push_back(txd.get_mstch_map());
+        --i;
+    }
+
+    //
+    // for each transaction in the block
+    for (size_t i = 0; i < blk.tx_hashes.size(); ++i)
+    {
+        
     }
 
 
@@ -1571,7 +1595,7 @@ show_block(uint64_t _blk_height)
 
 
 string
-show_block(string _blk_hash)
+show_block(string _blk_hash, size_t page_no = 1)
 {
     crypto::hash blk_hash;
 
@@ -1593,7 +1617,7 @@ show_block(string _blk_hash)
         return fmt::format("Cant get block {:s}", blk_hash);
     }
 
-    return show_block(blk_height);
+    return show_block(blk_height, page_no);
 }
 
 string

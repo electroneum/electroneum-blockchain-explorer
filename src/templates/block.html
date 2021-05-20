@@ -98,6 +98,7 @@
             </div>
         </div>
         <div class="panel-body">
+            {{#is_page_zero}}
             {{#coinbase_txs}}
             <div class="tx-item">
                 <table class="table">
@@ -166,6 +167,7 @@
                 </table>
             </div>
             {{/coinbase_txs}}
+            {{/is_page_zero}}
             {{#have_txs}}
             {{#blk_txs}}
             <div class="tx-item">
@@ -264,6 +266,45 @@
                 </table>
             </div>
             {{/blk_txs}}
+            <div class="page-nav">
+                <ul id="page-pagination" class="pagination-sm pagination">
+                    {{#is_page_zero}}
+                    <li class="first disabled">
+                        <span>&lt;&lt;</span>
+                    </li>
+                    <li class="prev disabled">
+                        <span>&lt;</span>
+                    </li>
+                    {{/is_page_zero}}
+                    {{^is_page_zero}}
+                    <li class="first">
+                        <a href="/block/{{blk_hash}}">&lt;&lt;</a>
+                    </li>
+                    <li class="prev">
+                        <a href="/block/{{blk_hash}}/page/{{prev_page}}">&lt;</a>
+                    </li>
+                    {{/is_page_zero}}
+                    <li class="page active">
+                        <a href="#">{{page_no}} / {{total_page_no}}</a>
+                    </li>
+                    {{#is_last_page}}
+                    <li class="next disabled">
+                        <span href="#">&gt;</span>
+                    </li>
+                    <li class="last disabled">
+                        <span href="#">&gt;&gt;</span>
+                    </li>
+                    {{/is_last_page}}
+                    {{^is_last_page}}
+                    <li class="next">
+                        <a href="/block/{{blk_hash}}/page/{{next_page}}">&gt;</a>
+                    </li>
+                    <li class="last">
+                        <a href="/block/{{blk_hash}}/page/{{total_page_no}}">&gt;&gt;</a>
+                    </li>
+                    {{/is_last_page}}
+                </ul>
+            </div>
             {{/have_txs}}
         </div>
     </div>
