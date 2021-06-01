@@ -130,9 +130,18 @@
                                     {{/is_public_tx}}
                                     {{^is_public_tx}}
                                     <li id="in_{{index}}">
-                                        <span title="{{from}}" class="txio-address"
-                                            style="color:#2ab1f3;">{{from}}</span>
+                                        {{input_idx}}: <span title="{{from}}" class="txio-address" style="color:#333;">{{in_key_img}}</span>
                                         <span class="txio-amount">{{amount}}</span>
+                                        {{^enable_mixins_details}}
+                                        {{#mixins}}
+                                        <br>
+                                        <a href="/block/{{mix_blk}}#out_{{mix_pub_key}}" style="margin-left: 20px;">
+                                            <span class="arrow left" aria-hidden="true"></span>
+                                        </a>
+                                        <a href="/block/{{mix_blk}}#out_{{mix_pub_key}}" title="{{from}}" class="txio-address" style="color:#2ab1f3;">{{mix_pub_key}}</a>
+                                        {{/mixins}}
+                                        {{/enable_mixins_details}}
+                                        
                                     </li>
                                     {{/is_public_tx}}
                                     {{/inputs}}

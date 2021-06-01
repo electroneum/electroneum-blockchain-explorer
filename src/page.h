@@ -4645,7 +4645,7 @@ show_address_details(const address_parse_info& address_info, cryptonote::network
 
 
     // number of last blocks to show
-    uint64_t no_of_last_txs = std::min(10, (int)tx_hashes.size());
+    uint64_t no_of_last_txs = tx_hashes.size() > 0 ? std::min(10, (int)tx_hashes.size()) : 1;
     uint64_t total_page_no = (tx_hashes.size() / no_of_last_txs) > 1 ? (tx_hashes.size() / no_of_last_txs) + 1 : 1;
 
     context.emplace("page_no", page_no);
@@ -4661,7 +4661,7 @@ show_address_details(const address_parse_info& address_info, cryptonote::network
     int64_t end_index = start_index + no_of_last_txs - 1;
     int64_t i = end_index;
 
-    while (i >= start_index)
+    while (!tx_hashes.empty() && i >= start_index)
     {
       crypto::hash tx_hash = tx_hashes.at(i);
       transaction tx;
