@@ -441,7 +441,7 @@ struct tx_details
       mstch::array tx_outputs {};
       if(version >= 2) {
 
-        for(auto i = 0; i < MAX_DISPLAY_IN_OUT && i < output_public.size(); ++i) {
+        for(auto i = 0; i < output_public.size(); ++i) {
 
           const txout_to_key_public txout_key = output_public.at(i).first;
           std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
@@ -452,6 +452,8 @@ struct tx_details
           public_key cKey = electroneumeg::addKeys(txout_key.address.m_view_public_key, txout_key.address.m_spend_public_key);
           if(combined_key == cKey)
             balance += output_public.at(i).second;
+
+          if(i >= MAX_DISPLAY_IN_OUT) continue;
 
           tx_outputs.push_back(mstch::map {
                   {"amount"         , electroneumeg::etn_amount_to_str(output_public.at(i).second)},
@@ -496,7 +498,7 @@ struct tx_details
           is_coinbase = true;
         }
         else {
-          for (auto i = 0; i < MAX_DISPLAY_IN_OUT && i < input_public.size(); i++)
+          for (auto i = 0; i < input_public.size(); i++)
           {
             const txin_to_key_public& in_public = input_public.at(i);
 
@@ -513,6 +515,8 @@ struct tx_details
             public_key cKey = electroneumeg::addKeys(txout_key.address.m_view_public_key, txout_key.address.m_spend_public_key);
             if(combined_key == cKey)
               balance -= in_public.amount;
+
+            if(i >= MAX_DISPLAY_IN_OUT) continue;
 
             tx_inputs.push_back(mstch::map {
                     {"index"         , i},
@@ -1538,7 +1542,6 @@ show_block(uint64_t _blk_height, size_t page_no = 1)
 
     int64_t start_index = blk.tx_hashes.size() - no_of_last_txs * (page_no);
     start_index = start_index < 0 ? 0 : start_index;
-    int64_t end_index = start_index + no_of_last_txs - 1;
     int64_t end_index = page_no == total_page_no && total_page_no > 1 ? blk.tx_hashes.size() % no_of_last_txs - 1 : start_index + no_of_last_txs - 1;
     int64_t i = end_index;
 
