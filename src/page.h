@@ -1526,7 +1526,7 @@ show_block(uint64_t _blk_height, size_t page_no = 1)
 
     // number of txs to show
     uint64_t no_of_last_txs = blk.tx_hashes.size() > 0 ? std::min(10, (int)blk.tx_hashes.size()) : 1;
-    uint64_t total_page_no = (blk.tx_hashes.size() / no_of_last_txs) > 1 ? (blk.tx_hashes.size() / no_of_last_txs) + 1 : 1;
+    uint64_t total_page_no = blk.tx_hashes.size() > no_of_last_txs ? (blk.tx_hashes.size() / no_of_last_txs) + 1 : 1;
 
     context.emplace("page_no", page_no);
     context.emplace("total_page_no", total_page_no);
@@ -1539,6 +1539,7 @@ show_block(uint64_t _blk_height, size_t page_no = 1)
     int64_t start_index = blk.tx_hashes.size() - no_of_last_txs * (page_no);
     start_index = start_index < 0 ? 0 : start_index;
     int64_t end_index = start_index + no_of_last_txs - 1;
+    int64_t end_index = page_no == total_page_no && total_page_no > 1 ? blk.tx_hashes.size() % no_of_last_txs - 1 : start_index + no_of_last_txs - 1;
     int64_t i = end_index;
 
     while (!blk.tx_hashes.empty() && i >= start_index)
@@ -1570,14 +1571,6 @@ show_block(uint64_t _blk_height, size_t page_no = 1)
         txs.push_back(txd.get_mstch_map());
         --i;
     }
-
-    //
-    // for each transaction in the block
-    for (size_t i = 0; i < blk.tx_hashes.size(); ++i)
-    {
-        
-    }
-
 
     // add total fees in the block to the context
     context["sum_fees"]
@@ -4646,7 +4639,7 @@ show_address_details(const address_parse_info& address_info, cryptonote::network
 
     // number of last blocks to show
     uint64_t no_of_last_txs = tx_hashes.size() > 0 ? std::min(10, (int)tx_hashes.size()) : 1;
-    uint64_t total_page_no = (tx_hashes.size() / no_of_last_txs) > 1 ? (tx_hashes.size() / no_of_last_txs) + 1 : 1;
+    uint64_t total_page_no = (tx_hashes.size() > no_of_last_txs) ? (tx_hashes.size() / no_of_last_txs) + 1 : 1;
 
     context.emplace("page_no", page_no);
     context.emplace("total_page_no", total_page_no);
@@ -4658,7 +4651,7 @@ show_address_details(const address_parse_info& address_info, cryptonote::network
 
     int64_t start_index = tx_hashes.size() - no_of_last_txs * (page_no);
     start_index = start_index < 0 ? 0 : start_index;
-    int64_t end_index = start_index + no_of_last_txs - 1;
+    int64_t end_index = page_no == total_page_no && total_page_no > 1 ? tx_hashes.size() % no_of_last_txs - 1: start_index + no_of_last_txs - 1;
     int64_t i = end_index;
 
     while (!tx_hashes.empty() && i >= start_index)
