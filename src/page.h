@@ -6652,6 +6652,7 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
     string server_time_str = electroneumeg::timestamp_to_str_gm(server_timestamp, "%F");
 
     mstch::array inputs = mstch::array{};
+    mstch::array invoice_entries = mstch::array{};
 
     uint64_t input_idx {0};
 
@@ -6896,6 +6897,7 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
     }
 
     std::set<std::string> input_addresses;
+    std::map<std::string, uint64_t> input_address_amount;
 
     if(tx.version >= 3) {
 
@@ -6927,6 +6929,16 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
           from = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
 
           if(input_addresses.find(from) == input_addresses.end()) input_addresses.insert(from);
+
+          if(input_address_amount.find(from) == input_address_amount.end()) 
+          {
+            input_address_amount.insert({from, in_public.amount});
+          }
+          else
+          {
+            auto it = input_address_amount.find(from);
+            it->second += in_public.amount;
+          }
 
           inputs_etn_sum += in_public.amount;
 
@@ -7031,6 +7043,8 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
 
     if(tx.version >= 2) {
 
+      std::map<std::string, uint64_t> output_address_amount;
+
       for(auto i = 0; i < tx.vout.size(); ++i) {
 
         tx_out outp = tx.vout[i];
@@ -7040,7 +7054,24 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
         std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
 
         bool is_change = false;
-        if(input_addresses.find(to) != input_addresses.end()) is_change = true;
+        if(input_addresses.find(to) != input_addresses.end()) 
+        {
+            is_change = true;
+            auto it = input_address_amount.find(to);
+            it->second -= outp.amount;
+        }
+        else
+        {
+            if(output_address_amount.find(to) == output_address_amount.end()) 
+            {
+                output_address_amount.insert({to, outp.amount});
+            }
+            else
+            {
+                auto it = output_address_amount.find(to);
+                it->second += outp.amount;
+            }
+        }
 
         tx_input_t spent_tx_in = mcore->get_tx_input(tx.hash, i);
 
@@ -7059,7 +7090,26 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
         });
       }
 
+      for(auto m : input_address_amount)
+      {
+        invoice_entries.push_back(mstch::map {
+            {"address",         m.first},
+            {"amount",          electroneumeg::etn_amount_to_str(m.second)},
+            {"positive",        false}
+        });
+      }
+
+      for(auto m : output_address_amount)
+      {
+        invoice_entries.push_back(mstch::map {
+            {"address",         m.first},
+            {"amount",          electroneumeg::etn_amount_to_str(m.second)},
+            {"positive",        true}
+        });
+      }
+
       context["outputs_no"] = std::to_string(tx.vout.size());
+      context.emplace("invoice_entries", invoice_entries);
     }
 
     context["outputs_etn_sum"] = electroneumeg::etn_amount_to_str(outputs_etn_sum);

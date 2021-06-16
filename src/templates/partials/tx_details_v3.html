@@ -83,6 +83,45 @@
             </div>
         </div>
     </div>
+    {{^is_coinbase}}
+    {{^is_stealth_tx}}
+    <div class="panel panel-bm txAbstract">
+        <div class="panel-heading">
+            <div class="panel-heading-title">Balance Summary</div>
+        </div>
+        <div class="panel-body">
+            <div class="panel-body">
+                <div class="pool-panel pool-panel-share">
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <th class="text-left" width="85px">Address</th>
+                                <th class="text-right" width="85px">Balance Change</th>
+                            </tr>
+                            {{#invoice_entries}}
+                            <tr class="js-realtime-row">
+                                <td class="text-left txScripts-inner" width="15px" style="vertical-align: middle;padding-right: 8px">
+                                    <a href="/address/{{address}}" style="font-size: 15px;">{{address}}</a>
+                                </td>
+                                <td class="text-right" width="140px">
+                                    {{#positive}}
+                                    <span style="color: green;">+ {{amount}}</span>
+                                    {{/positive}}
+                                    {{^positive}}
+                                    <span style="color: red;">- {{amount}}</span>
+                                    {{/positive}}
+                                    <span class="text-muted">ETN</span>
+                                </td>
+                            </tr>
+                            {{/invoice_entries}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/is_stealth_tx}}
+    {{/is_coinbase}}
     <div class="panel panel-bm txDetail">
         <div class="panel-heading">
             <div class="row">
@@ -105,7 +144,6 @@
         </div>
         <div class="panel-body">
             <div class="tx-item">
-
                 <table class="table">
                     <tbody>
                         <tr class="txio">

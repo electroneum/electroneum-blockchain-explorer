@@ -6,6 +6,7 @@ body {
     background-color: #e6e9ee;
     font-weight: 400;
     line-height: 1.5;
+    min-width: 1165px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -199,6 +200,7 @@ header {
     height: 100px;
     display: flex;
     align-items: center;
+    min-width: 1180px;
 }
 
 header img {
@@ -716,7 +718,6 @@ li {
 }
 
 #footer {
-    background: #000000;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -810,7 +811,6 @@ li {
 
 #footer .footer-box {
     padding: 20px;
-    border-bottom: 1px solid #11445b;
 }
 
 @media only screen and (min-width: 768px) {
@@ -937,7 +937,6 @@ li {
 #footer .footer-text {
     font-size: 0.875em;
     line-height: 2em;
-    color: white;
     width: 100%;
     text-align: center;
 }
@@ -960,7 +959,7 @@ li {
 
 @media only screen and (min-width: 960px) and (orientation: landscape) {
     #footer .footer-end {
-        padding: 36px 0 0 0;
+        padding: 0px 0 0 0;
         -webkit-box-orient: horizontal;
         -webkit-box-direction: normal;
         -ms-flex-flow: row wrap;
@@ -1112,6 +1111,10 @@ tr {
     text-align: right;
 }
 
+.text-left {
+    text-align: left;
+}
+
 .panel-bm .panel-heading-corner .icon-arrow-right {
     margin-left: 5px;
 }
@@ -1142,13 +1145,6 @@ tr {
     border-bottom: 1px solid #e6e9ee;
     height: 40px;
     vertical-align: middle;
-}
-
-.table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
-    padding: 8px;
-    line-height: 1.42857143;
-    vertical-align: top;
-    border-top: 1px solid #ddd;
 }
 
 .indexBlockList .table>tbody>tr>td.indexBlockList-blockhash a {
