@@ -62,6 +62,16 @@
                                         <a href="/tx/{{hash}}" class="tx-item-summary-hash">{{hash}}</a>
                                     </td>
                                     <td>
+                                        <span class="tx-item-summary-timestamp">
+                                            {{#is_stealth_tx}}
+                                            <span style="background-color: #ccc;"
+                                                class="label label-primary tx-coinbase-label">Stealth</span>
+                                            {{/is_stealth_tx}}
+                                            {{#is_migration_tx}}
+                                            <span style="background-color: #b8dcbe;"
+                                                class="label label-primary tx-coinbase-label">Migration</span>
+                                            {{/is_migration_tx}}
+                                        </span>
                                         {{^is_coinbase}}
                                         <span class="tx-item-summary-timestamp">{{tx_fee_rate}} ETN/kB </span>
                                         <span class="tx-item-summary-timestamp">{{tx_fee}} ETN</span>
