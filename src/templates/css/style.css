@@ -1583,3 +1583,34 @@ ul, ol {
 .time-localization {
     opacity: 0;
 }
+
+.alert {
+    padding: 20px;
+    color: white;
+    margin-bottom: 15px;
+    opacity: 1;
+    transition: opacity 0.6s;
+    font-size: smaller;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgb(0 0 0 / 5%);
+}
+
+.alert>a {
+    color: white;
+    text-decoration: underline;
+}
+  
+.closebtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.closebtn:hover {
+    color: rgb(82, 82, 82);
+}

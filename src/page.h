@@ -805,6 +805,41 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
 
     uint64_t total_page_no = (height / no_of_last_blocks) > 1 ? (height / no_of_last_blocks) + 1: 1;
 
+    bool show_alert = false;
+    std::string alert_message;
+    std::string alert_color;
+    if(height < 1069110)
+    {
+        alert_message = "<b>Blockchain Update:</b> We have a planned blockchain update set to occour on block X."
+            "<br><br>"
+            "If you are a Wallet-CLI user, exchange, "
+            "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 release "
+            "available at our <a href=\"https://github.com/electroneum/electroneum/releases\" style=\"\">GitHub page</a>."
+            "<br><br>"
+            "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required."
+            "<br><br>"
+            "More about the blockchain update <a href=\"#\">here</a>.";
+
+        show_alert = true;
+        alert_color = "#ffb445";
+    }
+    else if(height >= 1069110 && height < 1069110 + 720)
+    {
+        alert_message = "<b>Blockchain Update:</b> The blockchain was updated successfully to the new public version of Electroneum's blockchain. "
+        "Transactions might take longer than usual to confirm due to the influx of migration transactions."
+        "<br><br>"
+        "If you are a Wallet-CLI user, exchange, "
+        "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 release "
+        "available at our <a href=\"https://github.com/electroneum/electroneum/releases\" style=\"\">GitHub page</a>."
+        "<br><br>"
+        "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required."
+        "<br><br>"
+        "More about the blockchain update <a href=\"#\">here</a>.";
+
+        show_alert = true;
+        alert_color = "#49b990";
+    }
+
     // initalise page tempate map with basic info about blockchain
     mstch::map context {
             {"testnet"                  , testnet},
@@ -827,7 +862,10 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
             {"enable_key_image_checker" , enable_key_image_checker},
             {"enable_output_key_checker", enable_output_key_checker},
             {"enable_autorefresh_option", enable_autorefresh_option},
-            {"show_cache_times"         , show_cache_times}
+            {"show_cache_times"         , show_cache_times},
+            {"show_alert"               , show_alert},
+            {"alert_message"            , alert_message},
+            {"alert_color"              , alert_color}
     };
 
     context.emplace("txs", mstch::array()); // will keep tx to show
@@ -6919,15 +6957,24 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
         else
         {
           const txin_to_key_public& in_public = boost::get<cryptonote::txin_to_key_public>(tx.vin[i]);
-
           transaction parent_tx;
-          mcore->get_tx(in_public.tx_hash, parent_tx);
+          txout_to_key_public txout_key;
+          try
+          {
+            mcore->get_tx(in_public.tx_hash, parent_tx);
 
-          const txout_to_key_public& txout_key = boost::get<cryptonote::txout_to_key_public>(parent_tx.vout[in_public.relative_offset].target);
+            txout_key = boost::get<cryptonote::txout_to_key_public>(parent_tx.vout[in_public.relative_offset].target);
+            amount = electroneumeg::etn_amount_to_str(in_public.amount);
+            from = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+          }
+          catch(const std::exception& e)
+          {
+            cerr << "Cant get tx: " << in_public.tx_hash << endl;
 
-          amount = electroneumeg::etn_amount_to_str(in_public.amount);
-          from = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
-
+            context["has_error"] = true;
+            context["error_msg"] = fmt::format("Cant get tx: {:s}", in_public.tx_hash);
+          }
+          
           if(input_addresses.find(from) == input_addresses.end()) input_addresses.insert(from);
 
           if(input_address_amount.find(from) == input_address_amount.end()) 

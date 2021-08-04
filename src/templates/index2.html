@@ -1,5 +1,13 @@
 {{#is_page_zero}}
 <div class="row">
+
+    {{#show_alert}}
+    <div class="alert" style="background-color: {{{alert_color}}}">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        {{{alert_message}}}
+    </div>
+    {{/show_alert}}
+
     {{{mempool_info}}}
     <div class="col-xs-6" style="padding-right: 0; padding-left: 10px;">
         <div class="panel panel-bm indexNetworkStats">
