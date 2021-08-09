@@ -1583,6 +1583,20 @@ show_block(uint64_t _blk_height, size_t page_no = 1)
     int64_t end_index = page_no == total_page_no && total_page_no > 1 ? blk.tx_hashes.size() % no_of_last_txs - 1 : start_index + no_of_last_txs - 1;
     int64_t i = end_index;
 
+    for(size_t i = 0; i < blk.tx_hashes.size(); ++i)
+    {
+        const crypto::hash& tx_hash = blk.tx_hashes.at(i);
+        transaction tx;
+
+        if (!mcore->get_tx(tx_hash, tx))
+        {
+            cerr << "Cant get tx: " << tx_hash << endl;
+            continue;
+        }
+
+        sum_fees += get_tx_fee(tx);
+    }
+
     while (!blk.tx_hashes.empty() && i >= start_index)
     {
         // get transaction info of the tx in the mempool
@@ -1604,9 +1618,6 @@ show_block(uint64_t _blk_height, size_t page_no = 1)
         tx_details txd = get_tx_details(tx, false,
                                         _blk_height,
                                         current_blockchain_height);
-
-        // add fee to the rest
-        sum_fees += txd.fee;
 
         // add tx details mstch map to context
         txs.push_back(txd.get_mstch_map());
