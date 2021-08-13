@@ -821,7 +821,7 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
         show_alert = true;
         alert_color = "#ffb445";
     }
-    else if(height >= 1175315 && height < 1175315 + 720)
+    else if(height >= 1175315 && height < 1175315 + 720*3)
     {
         alert_message = "<b>Blockchain Update:</b> The blockchain was updated successfully to the new public version of Electroneum's blockchain. "
         "Transactions might take longer than usual to confirm due to the influx of migration transactions."
