@@ -1,0 +1,270 @@
+<div class="row" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <ol class="breadcrumb bm">
+        <li><a href="/">Home</a></li>
+        <li>
+            {{#is_confirmed}}
+            <a href="/block/{{blk_height}}">Block - {{blk_height}}</a>
+            {{/is_confirmed}}
+            {{^is_confirmed}}
+            <a href="/txpool">Mempool</a>
+            {{/is_confirmed}}
+        </li>
+        <li>Transaction - {{tx_hash}}</li>
+    </ol>
+</div>
+<div class="row">
+    <div class="panel panel-bm txAbstract">
+        <div class="panel-heading">
+            <div class="panel-heading-title">Summary</div>
+        </div>
+        <div class="panel-body text-center">
+            <div class="abstract-inner txAbstract-inner">
+                <div class="abstract-section">
+                    <dl>
+                        <dt>Height</dt>
+                        <dd><a href="/block/{{blk_height}}">{{blk_height}}</a></dd>
+                    </dl>
+                    <dl>
+                        <dt>Confirmations</dt>
+                        <dd>{{confirmations}}</dd>
+                    </dl>
+                    {{^have_raw_tx}}
+                    <dl>
+                        <dt>Time</dt>
+                        <dd class="time-localization">{{blk_timestamp}}</dd>
+                    </dl>
+                    {{/have_raw_tx}}
+                    <dl>
+                        <dt>Size</dt>
+                        <dd> {{tx_size}} <span class="text-muted">kB</span></dd>
+                    </dl>
+                    <dl>
+                        <dt>Version</dt>
+                        <dd>
+                            {{#is_stealth_tx}}
+                            <span style="background-color: #ccc;"
+                                class="label label-primary tx-coinbase-label">Stealth</span>
+                            {{/is_stealth_tx}}
+                            {{#is_migration_tx}}
+                            <span style="background-color: #b8dcbe;"
+                                class="label label-primary tx-coinbase-label">Migration</span>
+                            {{/is_migration_tx}}
+                            {{#is_public_tx}}
+                            <span style="background-color: #94d2dc;"
+                                class="label label-primary tx-coinbase-label">Public</span>
+                            {{/is_public_tx}}
+                        </dd>
+                    </dl>
+                </div>
+                <div class="abstract-section">
+                    <dl>
+                        <dt>Input</dt>
+                        <dd> {{inputs_etn_sum}} <span class="text-muted">ETN</span> </dd>
+                    </dl>
+                    <dl>
+                        <dt>Output</dt>
+                        <dd> {{outputs_etn_sum}} <span class="text-muted">ETN</span> </dd>
+                    </dl>
+                    <dl>
+                        <dt>Fees </dt>
+                        <dd> {{tx_fee}} <span class="text-muted">ETN</span> </dd>
+                    </dl>
+                    <dl>
+                        <dt>Fees Rate (ETN / kB)</dt>
+                        <dd> {{payed_for_kB}} <span class="text-muted">ETN</span> </dd>
+                    </dl>
+                    {{#has_payment_id}}
+                    <dl>
+                        <dt>Payment ID (ASCII)</dt>
+                        <dd class="txScripts-inner">{{payment_id_as_ascii}} </dd>
+                    </dl>
+                    {{/has_payment_id}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{^is_coinbase}}
+    {{^is_stealth_tx}}
+    <div class="panel panel-bm txAbstract">
+        <div class="panel-heading">
+            <div class="panel-heading-title">Balance Summary</div>
+        </div>
+        <div class="panel-body">
+            <div class="panel-body">
+                <div class="pool-panel pool-panel-share">
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <th class="text-left" width="85px">Address</th>
+                                <th class="text-right" width="85px">Balance Change</th>
+                            </tr>
+                            {{#invoice_entries}}
+                            <tr class="js-realtime-row">
+                                <td class="text-left txScripts-inner" width="15px" style="vertical-align: middle;padding-right: 8px">
+                                    <a href="/address/{{address}}" style="font-size: 15px;">{{address}}</a>
+                                </td>
+                                <td class="text-right" width="140px">
+                                    {{#positive}}
+                                    <span style="color: green;">+ {{amount}}</span>
+                                    {{/positive}}
+                                    {{^positive}}
+                                    <span style="color: red;">- {{amount}}</span>
+                                    {{/positive}}
+                                    <span class="text-muted">ETN</span>
+                                </td>
+                            </tr>
+                            {{/invoice_entries}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/is_stealth_tx}}
+    {{/is_coinbase}}
+    <div class="panel panel-bm txDetail">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-heading-title">
+                        Input
+                        ({{inputs_no}})
+                        <span class="txDetail-heading-amount">{{inputs_etn_sum}} <span
+                                class="text-muted">ETN</span></span>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="panel-heading-title">
+                        Output ({{outputs_no}})
+                        <span class="txDetail-heading-amount">{{outputs_etn_sum}} <span
+                                class="text-muted">ETN</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="tx-item">
+                <table class="table">
+                    <tbody>
+                        <tr class="txio">
+                            <td>
+                                <ul>
+                                    {{#is_coinbase}}
+                                    <li>
+                                        <a href="/block/{{height}}"><span
+                                                class="label label-primary tx-coinbase-label">Coinbase</span></a>
+                                    </li>
+                                    {{/is_coinbase}}
+                                    {{^is_coinbase}}
+                                    {{#inputs}}
+                                    {{#is_public_tx}}
+                                    <li id="in_{{index}}">
+                                        <a href="/tx/{{input_tx_hash}}#out_{{input_relative_offset}}">
+                                            <span class="arrow left" aria-hidden="true"></span>
+                                        </a>
+                                        <a title="{{from}}" href="/address/{{from}}" class="txio-address">{{from}}</a>
+                                        <span class="txio-amount">{{amount}}</span>
+                                    </li>
+                                    {{/is_public_tx}}
+                                    {{^is_public_tx}}
+                                    <li id="in_{{index}}">
+                                        {{input_idx}}: <span title="{{from}}" class="txio-address" style="color:#333;">{{in_key_img}}</span>
+                                        <span class="txio-amount">{{amount}}</span>
+                                        {{^enable_mixins_details}}
+                                        {{#mixins}}
+                                        <br>
+                                        <a href="/block/{{mix_blk}}#out_{{mix_pub_key}}" style="margin-left: 20px;">
+                                            <span class="arrow left" aria-hidden="true"></span>
+                                        </a>
+                                        <a href="/block/{{mix_blk}}#out_{{mix_pub_key}}" title="{{from}}" class="txio-address" style="color:#2ab1f3;">{{mix_pub_key}}</a>
+                                        {{/mixins}}
+                                        {{/enable_mixins_details}}
+                                        
+                                    </li>
+                                    {{/is_public_tx}}
+                                    {{/inputs}}
+                                    {{/is_coinbase}}
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    {{#outputs}}
+                                    <li id="out_{{index}}">
+                                        {{#is_stealth_tx}}
+                                        <span title="{{to}}" class="txio-address" style="color:#2ab1f3;">{{to}}</span>
+                                        {{/is_stealth_tx}}
+                                        {{^is_stealth_tx}}
+                                        <a title="{{to}}" href="/address/{{to}}" class="txio-address">{{to}}</a>
+                                        {{/is_stealth_tx}}
+                                        {{#is_change}}
+                                        <span class="txio-amount"><span class="text-muted">{{amount}}</span>
+                                            {{/is_change}}
+                                            {{^is_change}}
+                                            <span class="txio-amount">{{amount}}
+                                                {{/is_change}}
+                                                {{^is_stealth_tx}}
+                                                {{#is_spent}}
+                                                <a title="Spent" href="/tx/{{spent_tx_hash}}#in_{{spent_tx_index}}">
+                                                    <span class="arrow right" aria-hidden="true"></span>
+                                                </a>
+                                                {{/is_spent}}
+                                                {{^is_spent}}
+                                                <span>
+                                                    <span class="arrow right" aria-hidden="true"
+                                                        style="opacity: 0;"></span>
+                                                </span>
+                                                {{/is_spent}}
+                                                {{/is_stealth_tx}}
+                                            </span>
+                                    </li>
+                                    {{/outputs}}
+                                </ul>
+                            </td>
+
+                        </tr>
+                        {{#is_confirmed}}
+                        <tr class="tx-item-footer">
+                            <td class="tx-item-footer-note"></td>
+                            <td class="tx-item-footer-additional">
+                                <span class="tx-item-footer-additional-box">{{confirmations}} Confirmations </span>
+                            </td>
+                        </tr>
+                        {{/is_confirmed}}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+    {{#has_payment_id}}
+    <div class="panel panel-bm txScripts">
+        <div class="panel-heading">
+            <div class="panel-heading-title">Payment ID</div>
+        </div>
+        <div class="panel-body text-center">
+            <div class="abstract-inner txScripts-inner">
+                {{payment_id}}
+            </div>
+        </div>
+    </div>
+    {{/has_payment_id}}
+    {{^is_coinbase}}
+    {{#is_public_tx}}
+    <div class="panel panel-bm txScripts">
+        <div class="panel-heading">
+            <div class="panel-heading-title">Input Signatures</div>
+        </div>
+        <div class="panel-body text-center">
+            <div class="abstract-inner txScripts-inner">
+                {{#inputs}}
+                <div>{{index}} : {{from}} : ({{amount}})</div>
+                <div>[data]: {{input_tx_hash}}{{input_relative_offset}}</div>
+                <div>[signature]: {{input_signature}}</div>
+                <div>(witness): {{input_witness}}</div><br>
+                {{/inputs}}
+            </div>
+        </div>
+    </div>
+    {{/is_public_tx}}
+    {{/is_coinbase}}
+</div>

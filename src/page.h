@@ -279,8 +279,18 @@ struct tx_details
     // public keys and etn amount of outputs
     vector<pair<txout_to_key, uint64_t>> output_pub_keys;
 
+    //Public inputs/outputs
+    vector<pair<txout_to_key_public, uint64_t>> output_public;
+    vector<txin_to_key_public> input_public;
+
+    uint64_t tx_timestamp;
+
+    MicroCore* mcore;
+
+    size_t MAX_DISPLAY_IN_OUT = 5;
+
     mstch::map
-    get_mstch_map() const
+    get_mstch_map(crypto::public_key combined_key = crypto::null_pkey) const
     {
 
         string mixin_str {""};
@@ -295,11 +305,16 @@ struct tx_details
         // tx size in kB
         double tx_size =  static_cast<double>(size)/1024.0;
 
+        double payed_for_kB = etn_amount / tx_size;
+
+        set<std::string> input_addresses;
+
+        int64_t balance = 0;
+
+        bool is_coinbase = false;
 
         if (!input_key_imgs.empty())
         {
-            double payed_for_kB = etn_amount / tx_size;
-
             mixin_str        = std::to_string(mixin_no);
             fee_str          = fmt::format("{:0.2f}", etn_amount);
             fee_short_str    = fmt::format("{:0.2f}", etn_amount);
@@ -313,7 +328,8 @@ struct tx_details
                 {"hash"              , pod_to_hex(hash)},
                 {"prefix_hash"       , pod_to_hex(prefix_hash)},
                 {"pub_key"           , pod_to_hex(pk)},
-                {"tx_fee"            , fee_str},
+                {"tx_fee"            , fmt::format("{:0.2f}", etn_amount)},
+                {"tx_fee_rate"          , fmt::format("{:0.2f}", payed_for_kB)},
                 {"tx_fee_short"      , fee_short_str},
                 {"fee_micro"         , fee_micro_str},
                 {"payed_for_kB"      , payed_for_kB_str},
@@ -322,8 +338,8 @@ struct tx_details
                 {"sum_outputs"       , etn_amount_to_str(etn_outputs, "{:0.2f}")},
                 {"sum_inputs_short"  , etn_amount_to_str(etn_inputs , "{:0.2f}")},
                 {"sum_outputs_short" , etn_amount_to_str(etn_outputs, "{:0.2f}")},
-                {"no_inputs"         , static_cast<uint64_t>(input_key_imgs.size())},
-                {"no_outputs"        , static_cast<uint64_t>(output_pub_keys.size())},
+                {"no_inputs"         , get_no_inputs()},
+                {"no_outputs"        , get_no_outputs()},
                 {"no_nonrct_inputs"  , num_nonrct_inputs},
                 {"mixin"             , mixin_str},
                 {"blk_height"        , blk_height},
@@ -341,7 +357,18 @@ struct tx_details
                 {"has_add_pks"       , !additional_pks.empty()},
                 {"v_link"            , v_link},
                 {"v_name"            , v_name},
-                {"top_up"            , topUp}
+                {"top_up"            , topUp},
+                {"tx_inputs"         , get_decomposed_tx_inputs(input_addresses, balance, combined_key, is_coinbase)},
+                {"tx_outputs"        , get_decomposed_tx_outputs(input_addresses, balance, combined_key)},
+                {"is_stealth_tx"     , version == 1},
+                {"is_migration_tx"     , version == 2},
+                {"is_public_tx"     , version >= 3},
+                {"show_more"     , get_no_inputs() >= 5 || get_no_outputs() >= 5},
+                {"relative_balance"     , balance > 0 ? etn_amount_to_str(balance , "{:0.2f}") : etn_amount_to_str(balance * -1 , "{:0.2f}")},
+                {"positive_relative_balance"     , balance > 0},
+                {"negative_relative_balance"     , balance < 0},
+                {"tx_timestamp"                        , electroneumeg::timestamp_to_str_gm(tx_timestamp) },
+                {"is_coinbase"                      , is_coinbase}
         };
 
 
@@ -386,6 +413,136 @@ struct tx_details
            << epee::string_tools::pod_to_hex(sig.r);
 
         return ss.str();
+    }
+
+    uint64_t
+    get_no_inputs() const
+    {
+      if(version >= 3) {
+        return static_cast<uint64_t>(input_public.size());
+      } else {
+        return static_cast<uint64_t>(input_key_imgs.size());
+      }
+    }
+
+    uint64_t
+    get_no_outputs() const
+    {
+      if(version >= 2) {
+        return static_cast<uint64_t>(output_public.size());
+      } else {
+        return static_cast<uint64_t>(output_pub_keys.size());
+      }
+    }
+
+    mstch::array
+    get_decomposed_tx_outputs(set<std::string> &input_addresses, int64_t &balance, crypto::public_key combined_key) const
+    {
+      mstch::array tx_outputs {};
+      if(version >= 2) {
+
+        for(auto i = 0; i < output_public.size(); ++i) {
+
+          const txout_to_key_public txout_key = output_public.at(i).first;
+          std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+
+          bool is_change = false;
+          if(input_addresses.find(to) != input_addresses.end()) is_change = true;
+
+          public_key cKey = electroneumeg::addKeys(txout_key.address.m_view_public_key, txout_key.address.m_spend_public_key);
+          if(combined_key == cKey)
+            balance += output_public.at(i).second;
+
+          if(i >= MAX_DISPLAY_IN_OUT) continue;
+
+          tx_outputs.push_back(mstch::map {
+                  {"amount"         , electroneumeg::etn_amount_to_str(output_public.at(i).second)},
+                  {"to"             , to},
+                  {"is_change"      , is_change},
+                  {"is_current_etn_address", combined_key == cKey},
+                  {"is_stealth",    false}
+          });
+        }
+      }
+      else
+      {
+
+        for(auto i = 0; i < MAX_DISPLAY_IN_OUT && i < output_pub_keys.size(); ++i) {
+          const txout_to_key txout_key = output_pub_keys.at(i).first;
+
+          if(i >= 5) continue;
+
+          tx_outputs.push_back(mstch::map {
+                  {"amount"         , electroneumeg::etn_amount_to_str(output_pub_keys.at(i).second)},
+                  {"to"             , pod_to_hex(txout_key.key)},
+                  {"is_stealth",    true}
+          });
+        }
+      }
+
+      return tx_outputs;
+    }
+
+    mstch::array
+    get_decomposed_tx_inputs(set<std::string> &input_addresses, int64_t &balance, crypto::public_key combined_key, bool &is_coinbase) const
+    {
+      mstch::array tx_inputs {};
+      if(version >= 3) {
+        if(input_public.empty())
+        {
+          tx_inputs.push_back(mstch::map {
+                  {"is_coinbase", true},
+                  {"height"     , blk_height}
+          });
+
+          is_coinbase = true;
+        }
+        else {
+          for (auto i = 0; i < input_public.size(); i++)
+          {
+            const txin_to_key_public& in_public = input_public.at(i);
+
+            transaction parent_tx;
+            mcore->get_tx(in_public.tx_hash, parent_tx);
+
+            const txout_to_key_public& txout_key = boost::get<cryptonote::txout_to_key_public>(parent_tx.vout[in_public.relative_offset].target);
+
+            std::string amount = electroneumeg::etn_amount_to_str(in_public.amount);
+            std::string from = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+
+            if(input_addresses.find(from) == input_addresses.end()) input_addresses.insert(from);
+
+            public_key cKey = electroneumeg::addKeys(txout_key.address.m_view_public_key, txout_key.address.m_spend_public_key);
+            if(combined_key == cKey)
+              balance -= in_public.amount;
+
+            if(i >= MAX_DISPLAY_IN_OUT) continue;
+
+            tx_inputs.push_back(mstch::map {
+                    {"index"         , i},
+                    {"from"         , from},
+                    {"amount"       , amount},
+                    {"is_coinbase"  , false},
+                    {"input_signature" ,  print_sig(signatures.at(i).at(0))},
+                    {"is_current_etn_address", combined_key == cKey},
+                    {"is_stealth",    false}
+            });
+          }
+        }
+      }
+      else
+      {
+        for(auto i = 0; i < MAX_DISPLAY_IN_OUT && i < input_key_imgs.size(); i++) {
+          tx_inputs.push_back(mstch::map {
+                  {"index"         , i},
+                  {"from"         , pod_to_hex(input_key_imgs.at(i).k_image)},
+                  {"amount"         , electroneumeg::etn_amount_to_str(input_key_imgs.at(i).amount)},
+                  {"is_stealth",    true}
+          });
+        }
+      }
+
+      return tx_inputs;
     }
 
     ~tx_details() {};
@@ -460,6 +617,7 @@ fifo_cache_t<uint64_t, vector<pair<crypto::hash, mstch::node>>> block_tx_cache;
 
 lru_cache_t<tx_info_cache::key, tx_info_cache> tx_context_cache;
 
+lru_cache_t<public_key, pair<uint64_t, vector<address_outputs>>> addr_outs_cache;
 
 public:
 
@@ -503,13 +661,14 @@ page(MicroCore* _mcore,
           stagenet_url {_stagenet_url},
           mainnet_url {_mainnet_url},
           block_tx_cache(200),
-          tx_context_cache(1000)
+          tx_context_cache(1000),
+          addr_outs_cache(8000)
 {
     mainnet = nettype == cryptonote::network_type::MAINNET;
     testnet = nettype == cryptonote::network_type::TESTNET;
     stagenet = nettype == cryptonote::network_type::STAGENET;
 
-    no_of_mempool_tx_of_frontpage = 25;
+    no_of_mempool_tx_of_frontpage = 10;
 
     // read template files for all the pages
     // into template_file map
@@ -535,6 +694,8 @@ page(MicroCore* _mcore,
     template_file["address"]         = get_full_page(electroneumeg::read(TMPL_ADDRESS));
     template_file["search_results"]  = get_full_page(electroneumeg::read(TMPL_SEARCH_RESULTS));
     template_file["tx_details"]      = electroneumeg::read(string(TMPL_PARIALS_DIR) + "/tx_details.html");
+    template_file["tx_details_v2"]      = electroneumeg::read(string(TMPL_PARIALS_DIR) + "/tx_details_v2.html");
+    template_file["tx_details_v3"]      = electroneumeg::read(string(TMPL_PARIALS_DIR) + "/tx_details_v3.html");
     template_file["tx_table_header"] = electroneumeg::read(string(TMPL_PARIALS_DIR) + "/tx_table_header.html");
     template_file["tx_table_row"]    = electroneumeg::read(string(TMPL_PARIALS_DIR) + "/tx_table_row.html");
 
@@ -605,7 +766,7 @@ page(MicroCore* _mcore,
  * @return rendered index page
  */
 string
-index2(uint64_t page_no = 0, bool refresh_page = false)
+index2(uint64_t page_no = 1, bool refresh_page = false)
 {
 
     mcore->validators->on_idle();
@@ -640,7 +801,40 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
     uint64_t height = core_storage->get_current_blockchain_height();
 
     // number of last blocks to show
-    uint64_t no_of_last_blocks = std::min(no_blocks_on_index + 1, height);
+    uint64_t no_of_last_blocks = std::min(no_blocks_on_index, height);
+
+    uint64_t total_page_no = (height / no_of_last_blocks) > 1 ? (height / no_of_last_blocks) + 1: 1;
+
+    bool show_alert = false;
+    std::string alert_message;
+    std::string alert_color;
+    if(height < 1175315)
+    {
+        alert_message = "<b>Blockchain Update:</b> We have a planned blockchain update set to occour on block 1175315 (late September)."
+            "<br><br>"
+            "If you are a Wallet-CLI user, exchange, "
+            "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 Aurora release "
+            "available at our <a href=\"https://github.com/electroneum/electroneum/releases\" style=\"\">GitHub page</a>."
+            "<br><br>"
+            "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required.";
+
+        show_alert = true;
+        alert_color = "#ffb445";
+    }
+    else if(height >= 1175315 && height < 1175315 + 720*3)
+    {
+        alert_message = "<b>Blockchain Update:</b> The blockchain was updated successfully to the new public version of Electroneum's blockchain. "
+        "Transactions might take longer than usual to confirm due to the influx of migration transactions."
+        "<br><br>"
+        "If you are a Wallet-CLI user, exchange, "
+        "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 release "
+        "available at our <a href=\"https://github.com/electroneum/electroneum/releases\" style=\"\">GitHub page</a>."
+        "<br><br>"
+        "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required.";
+
+        show_alert = true;
+        alert_color = "#49b990";
+    }
 
     // initalise page tempate map with basic info about blockchain
     mstch::map context {
@@ -654,16 +848,20 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
             {"server_timestamp"         , electroneumeg::timestamp_to_str_gm(local_copy_server_timestamp)},
             {"age_format"               , string("[h:m:d]")},
             {"page_no"                  , page_no},
-            {"total_page_no"            , (height / no_of_last_blocks)},
-            {"is_page_zero"             , !bool(page_no)},
+            {"total_page_no"            , total_page_no},
+            {"is_page_zero"             , page_no == 1},
+            {"is_last_page"                , page_no == total_page_no},
             {"no_of_last_blocks"        , no_of_last_blocks},
             {"next_page"                , (page_no + 1)},
-            {"prev_page"                , (page_no > 0 ? page_no - 1 : 0)},
+            {"prev_page"                , (page_no > 1 ? page_no - 1 : 1)},
             {"enable_pusher"            , enable_pusher},
             {"enable_key_image_checker" , enable_key_image_checker},
             {"enable_output_key_checker", enable_output_key_checker},
             {"enable_autorefresh_option", enable_autorefresh_option},
-            {"show_cache_times"         , show_cache_times}
+            {"show_cache_times"         , show_cache_times},
+            {"show_alert"               , show_alert},
+            {"alert_message"            , alert_message},
+            {"alert_color"              , alert_color}
     };
 
     context.emplace("txs", mstch::array()); // will keep tx to show
@@ -672,7 +870,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
     mstch::array& txs = boost::get<mstch::array>(context["txs"]);
 
     // calculate starting and ending block numbers to show
-    int64_t start_height = height - no_of_last_blocks * (page_no + 1);
+    int64_t start_height = height - no_of_last_blocks * page_no;
 
     // check if start height is not below range
     start_height = start_height < 0 ? 0 : start_height;
@@ -860,6 +1058,8 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
             {
                 const cryptonote::transaction& tx = *it;
 
+                if(!is_coinbase(tx)) continue;
+
                 const tx_details& txd = get_tx_details(tx, false, i, height);
 
                 mstch::map txd_map = txd.get_mstch_map();
@@ -867,10 +1067,12 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
                 //add age to the txd mstch map
                 txd_map.insert({"height"    , i});
                 txd_map.insert({"blk_hash"  , blk_hash_str});
-                txd_map.insert({"age"       , age.first});
+                txd_map.insert({"timestamp"       , blk.timestamp});
                 txd_map.insert({"is_ringct" , (tx.version > 1)});
                 txd_map.insert({"rct_type"  , tx.rct_signatures.type});
                 txd_map.insert({"blk_size"  , blk_size_str});
+                txd_map.insert({"tx_count"       , blk_txs.size() - 1});
+                txd_map.insert({"has_multiple_tx", blk_txs.size() > 2 || blk_txs.size() == 1});
 
 
                 // do not show block info for other than first tx in a block
@@ -1040,7 +1242,7 @@ index2(uint64_t page_no = 0, bool refresh_page = false)
  * Render mempool data
  */
 string
-mempool(bool add_header_and_footer = false, uint64_t no_of_mempool_tx = 25)
+mempool(bool add_header_and_footer = false, uint64_t no_of_mempool_tx = 10)
 {
     std::vector<MempoolStatus::mempool_tx> mempool_txs;
 
@@ -1155,6 +1357,7 @@ mempool(bool add_header_and_footer = false, uint64_t no_of_mempool_tx = 25)
     context["no_of_mempool_tx_of_frontpage"] = no_of_mempool_tx;
 
     context["partial_mempool_shown"] = true;
+    context["mempool_full_page"] = true;
 
     // render the page
     return mstch::render(template_file["mempool"], context);
@@ -1224,7 +1427,7 @@ altblocks()
 
 
 string
-show_block(uint64_t _blk_height)
+show_block(uint64_t _blk_height, size_t page_no = 1)
 {
 
     // get block at the given height i
@@ -1314,6 +1517,8 @@ show_block(uint64_t _blk_height)
     string blk_pow_hash_str = pod_to_hex(get_block_longhash(blk, _blk_height));
     cryptonote::difficulty_type blk_difficulty = core_storage->get_db().get_block_difficulty(_blk_height);
 
+    string blk_signatory = boost::algorithm::hex(std::string(blk.signatory.begin(), blk.signatory.end()));
+
     mstch::map context {
             {"testnet"              , testnet},
             {"stagenet"             , stagenet},
@@ -1339,6 +1544,9 @@ show_block(uint64_t _blk_height)
             {"minor_ver"            , std::to_string(blk.minor_version)},
             {"blk_size"             , fmt::format("{:0.4f}",
                                                   static_cast<double>(blk_size) / 1024.0)},
+            {"confirmations"        , current_blockchain_height - _blk_height - 1},
+            {"has_signature"        , !blk.signatory.empty()},
+            {"signature"            , boost::algorithm::to_lower_copy(blk_signatory)}
     };
     context.emplace("coinbase_txs", mstch::array{{txd_coinbase.get_mstch_map()}});
     context.emplace("blk_txs"     , mstch::array());
@@ -1354,8 +1562,38 @@ show_block(uint64_t _blk_height)
     // timescale representation for each tx in the block
     vector<string> mixin_timescales_str;
 
-    // for each transaction in the block
-    for (size_t i = 0; i < blk.tx_hashes.size(); ++i)
+    // number of txs to show
+    uint64_t no_of_last_txs = blk.tx_hashes.size() > 0 ? std::min(10, (int)blk.tx_hashes.size()) : 1;
+    uint64_t total_page_no = blk.tx_hashes.size() > no_of_last_txs ? (blk.tx_hashes.size() / no_of_last_txs) + 1 : 1;
+
+    context.emplace("page_no", page_no);
+    context.emplace("total_page_no", total_page_no);
+    context.emplace("is_page_zero", page_no == 1);
+    context.emplace("is_last_page", page_no == total_page_no);
+    context.emplace("no_of_last_txs", no_of_last_txs);
+    context.emplace("next_page", (page_no + 1));
+    context.emplace("prev_page", (page_no > 1 ? page_no - 1 : 1));
+
+    int64_t start_index = blk.tx_hashes.size() - no_of_last_txs * (page_no);
+    start_index = start_index < 0 ? 0 : start_index;
+    int64_t end_index = page_no == total_page_no && total_page_no > 1 ? blk.tx_hashes.size() % no_of_last_txs - 1 : start_index + no_of_last_txs - 1;
+    int64_t i = end_index;
+
+    for(size_t i = 0; i < blk.tx_hashes.size(); ++i)
+    {
+        const crypto::hash& tx_hash = blk.tx_hashes.at(i);
+        transaction tx;
+
+        if (!mcore->get_tx(tx_hash, tx))
+        {
+            cerr << "Cant get tx: " << tx_hash << endl;
+            continue;
+        }
+
+        sum_fees += get_tx_fee(tx);
+    }
+
+    while (!blk.tx_hashes.empty() && i >= start_index)
     {
         // get transaction info of the tx in the mempool
         const crypto::hash& tx_hash = blk.tx_hashes.at(i);
@@ -1377,19 +1615,10 @@ show_block(uint64_t _blk_height)
                                         _blk_height,
                                         current_blockchain_height);
 
-        // add fee to the rest
-        sum_fees += txd.fee;
-
-
-        // get mixins in time scale for visual representation
-        //string mixin_times_scale = electroneumeg::timestamps_time_scale(mixin_timestamps,
-        //                                                        server_timestamp);
-
-
         // add tx details mstch map to context
         txs.push_back(txd.get_mstch_map());
+        --i;
     }
-
 
     // add total fees in the block to the context
     context["sum_fees"]
@@ -1397,7 +1626,7 @@ show_block(uint64_t _blk_height)
 
     // get etn in the block reward
     context["blk_reward"]
-            = electroneumeg::etn_amount_to_str(txd_coinbase.etn_outputs - sum_fees, "{:0.6f}");
+            = electroneumeg::etn_amount_to_str(txd_coinbase.etn_outputs - sum_fees, "{:0.2f}");
 
     add_css_style(context);
 
@@ -1407,7 +1636,7 @@ show_block(uint64_t _blk_height)
 
 
 string
-show_block(string _blk_hash)
+show_block(string _blk_hash, size_t page_no = 1)
 {
     crypto::hash blk_hash;
 
@@ -1429,7 +1658,7 @@ show_block(string _blk_hash)
         return fmt::format("Cant get block {:s}", blk_hash);
     }
 
-    return show_block(blk_height);
+    return show_block(blk_height, page_no);
 }
 
 string
@@ -1655,9 +1884,11 @@ show_tx(string tx_hash_str, uint16_t with_ring_signatures = 0, bool refresh_page
 
     boost::get<mstch::array>(context["txs"]).push_back(tx_context);
 
-    map<string, string> partials {
-            {"tx_details", template_file["tx_details"]},
-    };
+    map<string, string> partials;
+    partials.insert({
+            {"tx_details", template_file["tx_details_v3"]},
+    });
+
 
     add_css_style(context);
 
@@ -4338,17 +4569,12 @@ search(string search_text)
 
     // check if electroneum address is given based on its length
     // if yes, then we can only show its public components
-    if (search_str_length == 95)
+    if (search_str_length == 98)
     {
         // parse string representing given electroneum address
         address_parse_info address_info;
 
         cryptonote::network_type nettype_addr {cryptonote::network_type::MAINNET};
-
-        if (search_text[0] == '9' || search_text[0] == 'A' || search_text[0] == 'B')
-            nettype_addr = cryptonote::network_type::TESTNET;
-        if (search_text[0] == '5' || search_text[0] == '7')
-            nettype_addr = cryptonote::network_type::STAGENET;
 
         if (!electroneumeg::parse_str_address(search_text, address_info, nettype_addr))
         {
@@ -4392,21 +4618,102 @@ search(string search_text)
 }
 
 string
-show_address_details(const address_parse_info& address_info, cryptonote::network_type nettype = cryptonote::network_type::MAINNET)
+show_address_details(const address_parse_info& address_info, cryptonote::network_type nettype = cryptonote::network_type::MAINNET, size_t page_no = 1)
 {
 
     string address_str      = electroneumeg::print_address(address_info, nettype);
     string pub_viewkey_str  = fmt::format("{:s}", address_info.address.m_view_public_key);
     string pub_spendkey_str = fmt::format("{:s}", address_info.address.m_spend_public_key);
 
+    vector<address_outputs> outs;
+    const uint64_t server_time = std::time(nullptr);
+    public_key combined_key = electroneumeg::addKeys(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
+    if(addr_outs_cache.Contains(combined_key)) {
+      pair<uint64_t, vector<address_outputs>> outs_pair = addr_outs_cache.Get(combined_key);
+
+      uint64_t delta = server_time - outs_pair.first;
+      uint64_t threshold = page_no == 1 ? 1 * 30 : 10 * 60;
+      if(delta > threshold)
+      {
+        outs = mcore->get_addr_outputs(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
+        addr_outs_cache.Put(combined_key, { server_time, outs });
+      }
+      else
+      {
+        outs = outs_pair.second;
+      }
+    }
+    else
+    {
+      outs = mcore->get_addr_outputs(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
+      addr_outs_cache.Put(combined_key, { server_time, outs });
+    }
+
+    map<string, vector<address_outputs>> tx_outs_map;
+    vector<crypto::hash> tx_hashes;
+
+    uint64_t total_received = 0, total_spent = 0;
+
+    for(auto addr_out: outs)
+    {
+      string key = epee::string_tools::pod_to_hex(addr_out.tx_hash);
+      auto it = tx_outs_map.find(key);
+      if (it != tx_outs_map.end())
+      {
+        vector<address_outputs> &outs_vec = it->second;
+        outs_vec.push_back(addr_out);
+      }
+      else
+      {
+        tx_outs_map.insert(it, pair<string, vector<address_outputs>>(key, vector<address_outputs> {addr_out}));
+        tx_hashes.push_back(addr_out.tx_hash);
+      }
+
+      total_received += addr_out.amount;
+      if(addr_out.spent) total_spent += addr_out.amount;
+    }
+
     mstch::map context {
             {"etn_address"        , REMOVE_HASH_BRAKETS(address_str)},
-            {"public_viewkey"     , REMOVE_HASH_BRAKETS(pub_viewkey_str)},
-            {"public_spendkey"    , REMOVE_HASH_BRAKETS(pub_spendkey_str)},
-            {"is_integrated_addr" , false},
-            {"testnet"            , testnet},
-            {"stagenet"           , stagenet},
+            {"is_sub_addr" , false},
+            {"tx_count"    , tx_outs_map.size()},
+            {"total_received"    , electroneumeg::etn_amount_to_str(total_received)},
+            {"balance"    , electroneumeg::etn_amount_to_str(total_received - total_spent)},
     };
+
+    context.emplace("txs", mstch::array());
+    mstch::array& txs = boost::get<mstch::array>(context["txs"]);
+
+
+    // number of last blocks to show
+    uint64_t no_of_last_txs = tx_hashes.size() > 0 ? std::min(10, (int)tx_hashes.size()) : 1;
+    uint64_t total_page_no = (tx_hashes.size() > no_of_last_txs) ? (tx_hashes.size() / no_of_last_txs) + 1 : 1;
+
+    context.emplace("page_no", page_no);
+    context.emplace("total_page_no", total_page_no);
+    context.emplace("is_page_zero", page_no == 1);
+    context.emplace("is_last_page", page_no == total_page_no);
+    context.emplace("no_of_last_txs", no_of_last_txs);
+    context.emplace("next_page", (page_no + 1));
+    context.emplace("prev_page", (page_no > 1 ? page_no - 1 : 1));
+
+    int64_t start_index = tx_hashes.size() - no_of_last_txs * (page_no);
+    start_index = start_index < 0 ? 0 : start_index;
+    int64_t end_index = page_no == total_page_no && total_page_no > 1 ? tx_hashes.size() % no_of_last_txs - 1: start_index + no_of_last_txs - 1;
+    int64_t i = end_index;
+
+    while (!tx_hashes.empty() && i >= start_index)
+    {
+      crypto::hash tx_hash = tx_hashes.at(i);
+      transaction tx;
+      mcore->get_tx(tx_hash, tx);
+
+      bool is_coinbase = tx.vin.size() == 1 && tx.vin[0].type() == typeid(txin_gen);
+      const tx_details& txd = get_tx_details(tx, is_coinbase);
+
+      txs.push_back(txd.get_mstch_map(electroneumeg::addKeys(address_info.address.m_view_public_key, address_info.address.m_spend_public_key)));
+      --i;
+    }
 
     add_css_style(context);
 
@@ -6345,9 +6652,9 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
             {"blk_timestamp"         , blk_timestamp},
             {"blk_timestamp_uint"    , blk.timestamp},
             {"delta_time"            , age.first},
-            {"inputs_no"             , static_cast<uint64_t>(txd.input_key_imgs.size())},
-            {"has_inputs"            , !txd.input_key_imgs.empty()},
-            {"outputs_no"            , static_cast<uint64_t>(txd.output_pub_keys.size())},
+            {"inputs_no"             , txd.get_no_inputs()},
+            {"has_inputs"            , txd.get_no_inputs() > 0},
+            {"outputs_no"            , txd.get_no_outputs()},
             {"has_payment_id"        , txd.payment_id  != null_hash},
             {"has_payment_id8"       , txd.payment_id8 != null_hash8},
             {"confirmations"         , txd.no_confirmations},
@@ -6366,6 +6673,11 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
             {"show_more_details_link", true},
             {"from_cache"            , false},
             {"construction_time"     , string {}},
+            {"is_confirmed"             , txd.no_confirmations > 0},
+            {"is_coinbase"  , is_coinbase(tx)},
+            {"is_stealth_tx"     , txd.version == 1},
+            {"is_migration_tx"     , txd.version == 2},
+            {"is_public_tx"     , txd.version >= 3},
     };
 
     // append tx_json as in raw format to html
@@ -6385,6 +6697,7 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
     string server_time_str = electroneumeg::timestamp_to_str_gm(server_timestamp, "%F");
 
     mstch::array inputs = mstch::array{};
+    mstch::array invoice_entries = mstch::array{};
 
     uint64_t input_idx {0};
 
@@ -6416,10 +6729,6 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
     // make timescale maps for mixins in input
     for (const txin_to_key &in_key: txd.input_key_imgs)
     {
-
-        if (show_part_of_inputs && (input_idx > max_no_of_inputs_to_show))
-            break;
-
         // get absolute offsets of mixins
         std::vector<uint64_t> absolute_offsets
                 = cryptonote::relative_output_offsets_to_absolute(
@@ -6472,7 +6781,8 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
                 {"input_idx"    , fmt::format("{:02d}", input_idx)},
                 {"mixins"       , mstch::array{}},
                 {"ring_sigs"    , mstch::array{}},
-                {"already_spent", false} // placeholder for later
+                {"already_spent", false},
+                {"from"   , pod_to_hex(in_key.k_image)},
         });
 
         if (detailed_view)
@@ -6631,6 +6941,80 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
 
     }
 
+    std::set<std::string> input_addresses;
+    std::map<std::string, uint64_t> input_address_amount;
+
+    if(tx.version >= 3) {
+
+      for (auto i = 0; i < tx.vin.size(); i++)
+      {
+
+        std::string amount;
+        std::string from;
+
+        if(tx.vin[i].type() == typeid(txin_gen))
+        {
+          const txin_gen& in_gen = boost::get<cryptonote::txin_gen>(tx.vin[i]);
+
+          inputs.push_back(mstch::map {
+              {"is_coinbase", true},
+              {"height"     , std::to_string(in_gen.height)}
+          });
+        }
+        else
+        {
+          const txin_to_key_public& in_public = boost::get<cryptonote::txin_to_key_public>(tx.vin[i]);
+          transaction parent_tx;
+          txout_to_key_public txout_key;
+          try
+          {
+            mcore->get_tx(in_public.tx_hash, parent_tx);
+
+            txout_key = boost::get<cryptonote::txout_to_key_public>(parent_tx.vout[in_public.relative_offset].target);
+            amount = electroneumeg::etn_amount_to_str(in_public.amount);
+            from = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+          }
+          catch(const std::exception& e)
+          {
+            cerr << "Cant get tx: " << in_public.tx_hash << endl;
+
+            context["has_error"] = true;
+            context["error_msg"] = fmt::format("Cant get tx: {:s}", in_public.tx_hash);
+          }
+          
+          if(input_addresses.find(from) == input_addresses.end()) input_addresses.insert(from);
+
+          if(input_address_amount.find(from) == input_address_amount.end()) 
+          {
+            input_address_amount.insert({from, in_public.amount});
+          }
+          else
+          {
+            auto it = input_address_amount.find(from);
+            it->second += in_public.amount;
+          }
+
+          inputs_etn_sum += in_public.amount;
+
+          signature sig = tx.signatures.at(i).at(0);
+          stringstream ss;
+
+          ss << epee::string_tools::pod_to_hex(sig.c)
+             << epee::string_tools::pod_to_hex(sig.r);
+
+          inputs.push_back(mstch::map {
+              {"index"         , i},
+              {"from"         , from},
+              {"amount"       , amount},
+              {"is_coinbase"  , false},
+              {"input_signature" ,  ss.str()},
+              {"input_tx_hash" ,  pod_to_hex(in_public.tx_hash)},
+              {"input_relative_offset" ,  in_public.relative_offset},
+              {"input_witness" ,  pod_to_hex(crypto::addKeys(txout_key.address.m_view_public_key, txout_key.address.m_spend_public_key))},
+          });
+        }
+      }
+    }
 
     context["have_any_unknown_amount"]  = have_any_unknown_amount;
     context["inputs_etn_sum_not_zero"]  = (inputs_etn_sum > 0);
@@ -6677,40 +7061,113 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
 
     uint64_t outputs_etn_sum {0};
 
-    for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
+    if(tx.version == 1) 
     {
-
-        // total number of ouputs in the blockchain for this amount
-        uint64_t num_outputs_amount = core_storage->get_db()
-                .get_num_outputs(outp.second);
-
-        string out_amount_index_str {"N/A"};
-
-        // outputs in tx in them mempool dont have yet global indices
-        // thus for them, we print N/A
-        if (!out_amount_indices.empty())
+        for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
         {
-            out_amount_index_str
-                    = std::to_string(out_amount_indices.at(output_idx));
+
+            // total number of ouputs in the blockchain for this amount
+            uint64_t num_outputs_amount = core_storage->get_db()
+                    .get_num_outputs(outp.second);
+
+            string out_amount_index_str {"N/A"};
+
+            // outputs in tx in them mempool dont have yet global indices
+            // thus for them, we print N/A
+            if (!out_amount_indices.empty())
+            {
+                out_amount_index_str
+                        = std::to_string(out_amount_indices.at(output_idx));
+            }
+
+            outputs_etn_sum += outp.second;
+
+            outputs.push_back(mstch::map {
+                    {"out_pub_key"           , pod_to_hex(outp.first.key)},
+                    {"amount"                , electroneumeg::etn_amount_to_str(outp.second)},
+                    {"amount_idx"            , out_amount_index_str},
+                    {"num_outputs"           , num_outputs_amount},
+                    {"unformated_output_idx" , output_idx},
+                    {"output_idx"            , fmt::format("{:02d}", output_idx++)},
+                    {"to"           , pod_to_hex(outp.first.key)},
+            });
+
+        } //  for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
+    }
+
+    if(tx.version >= 2) {
+
+      std::map<std::string, uint64_t> output_address_amount;
+
+      for(auto i = 0; i < tx.vout.size(); ++i) {
+
+        tx_out outp = tx.vout[i];
+        const txout_to_key_public& txout_key = boost::get<cryptonote::txout_to_key_public>(outp.target);
+        outputs_etn_sum += outp.amount;
+
+        std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+
+        bool is_change = false;
+        if(input_addresses.find(to) != input_addresses.end()) 
+        {
+            is_change = true;
+            auto it = input_address_amount.find(to);
+            it->second -= outp.amount;
+        }
+        else
+        {
+            if(output_address_amount.find(to) == output_address_amount.end()) 
+            {
+                output_address_amount.insert({to, outp.amount});
+            }
+            else
+            {
+                auto it = output_address_amount.find(to);
+                it->second += outp.amount;
+            }
         }
 
-        outputs_etn_sum += outp.second;
+        tx_input_t spent_tx_in = mcore->get_tx_input(tx.hash, i);
+
+        bool is_spent = false;
+        if(spent_tx_in.tx_hash != crypto::null_hash)
+          is_spent = true;
 
         outputs.push_back(mstch::map {
-                {"out_pub_key"           , pod_to_hex(outp.first.key)},
-                {"amount"                , electroneumeg::etn_amount_to_str(outp.second)},
-                {"amount_idx"            , out_amount_index_str},
-                {"num_outputs"           , num_outputs_amount},
-                {"unformated_output_idx" , output_idx},
-                {"output_idx"            , fmt::format("{:02d}", output_idx++)}
+                {"index"          , i},
+                {"amount"         , electroneumeg::etn_amount_to_str(outp.amount)},
+                {"to"             , to},
+                {"is_change"      , is_change},
+                {"is_spent"       , is_spent},
+                {"spent_tx_hash"  , epee::string_tools::pod_to_hex(spent_tx_in.tx_hash)},
+                {"spent_tx_index" , std::to_string(spent_tx_in.in_index)}
         });
+      }
 
-    } //  for (pair<txout_to_key, uint64_t>& outp: txd.output_pub_keys)
+      for(auto m : input_address_amount)
+      {
+        invoice_entries.push_back(mstch::map {
+            {"address",         m.first},
+            {"amount",          electroneumeg::etn_amount_to_str(m.second)},
+            {"positive",        false}
+        });
+      }
+
+      for(auto m : output_address_amount)
+      {
+        invoice_entries.push_back(mstch::map {
+            {"address",         m.first},
+            {"amount",          electroneumeg::etn_amount_to_str(m.second)},
+            {"positive",        true}
+        });
+      }
+
+      context["outputs_no"] = std::to_string(tx.vout.size());
+      context.emplace("invoice_entries", invoice_entries);
+    }
 
     context["outputs_etn_sum"] = electroneumeg::etn_amount_to_str(outputs_etn_sum);
-
     context.emplace("outputs", outputs);
-
 
     return context;
 }
@@ -6792,7 +7249,7 @@ get_tx_details(const transaction& tx,
 
     // sum etn in inputs and ouputs in the given tx
     const array<uint64_t, 4>& sum_data = summary_of_in_out_rct(
-            tx, txd.output_pub_keys, txd.input_key_imgs);
+            tx, txd.output_pub_keys, txd.input_key_imgs, txd.output_public, txd.input_public);
 
     txd.etn_outputs       = sum_data[0];
     txd.etn_inputs        = sum_data[1];
@@ -6861,6 +7318,12 @@ get_tx_details(const transaction& tx,
         uint64_t bc_height = core_storage->get_current_blockchain_height();
 
         txd.no_confirmations = bc_height - (txd.blk_height);
+
+        crypto::hash blk_hash = core_storage->get_block_id_by_height(txd.blk_height);
+        block blk;
+        core_storage->get_block_by_hash(blk_hash, blk);
+
+        txd.tx_timestamp = blk.timestamp;
     }
     else
     {
@@ -6878,6 +7341,8 @@ get_tx_details(const transaction& tx,
     if(txd.payment_id_as_ascii.find("TopUp") != std::string::npos) {
         txd.topUp = "topup";
     }
+
+    txd.mcore = mcore;
     
     return txd;
 }

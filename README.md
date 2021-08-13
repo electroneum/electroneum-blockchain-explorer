@@ -29,7 +29,7 @@ In order for the explorer to compile, you will need to compile the main blockcha
 cd ~/
 
 # Clone recursively for the latest release branch and set up the submodules
-git clone --recursive -b release/3.1.0.0 http://github.com/electroneum/electroneum
+git clone --recursive -b release/4.0.0.0 http://github.com/electroneum/electroneum
 
 # Enter the cloned repository
 cd electroneum
@@ -64,7 +64,7 @@ mkdir build && cd build
 cmake ..
 
 # compile
-make
+cd .. && make
 ```
 
 
