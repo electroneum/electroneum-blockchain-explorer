@@ -808,22 +808,20 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
     bool show_alert = false;
     std::string alert_message;
     std::string alert_color;
-    if(height < 1069110)
+    if(height < 1175315)
     {
-        alert_message = "<b>Blockchain Update:</b> We have a planned blockchain update set to occour on block X."
+        alert_message = "<b>Blockchain Update:</b> We have a planned blockchain update set to occour on block 1175315 (late September)."
             "<br><br>"
             "If you are a Wallet-CLI user, exchange, "
-            "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 release "
+            "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 Aurora release "
             "available at our <a href=\"https://github.com/electroneum/electroneum/releases\" style=\"\">GitHub page</a>."
             "<br><br>"
-            "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required."
-            "<br><br>"
-            "More about the blockchain update <a href=\"#\">here</a>.";
+            "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required.";
 
         show_alert = true;
         alert_color = "#ffb445";
     }
-    else if(height >= 1069110 && height < 1069110 + 720)
+    else if(height >= 1175315 && height < 1175315 + 720)
     {
         alert_message = "<b>Blockchain Update:</b> The blockchain was updated successfully to the new public version of Electroneum's blockchain. "
         "Transactions might take longer than usual to confirm due to the influx of migration transactions."
@@ -832,9 +830,7 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
         "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 release "
         "available at our <a href=\"https://github.com/electroneum/electroneum/releases\" style=\"\">GitHub page</a>."
         "<br><br>"
-        "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required."
-        "<br><br>"
-        "More about the blockchain update <a href=\"#\">here</a>.";
+        "If you are an Electroneum App (Android/iOS) or Online Wallet user, no actions required.";
 
         show_alert = true;
         alert_color = "#49b990";
