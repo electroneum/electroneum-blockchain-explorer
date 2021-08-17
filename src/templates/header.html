@@ -86,6 +86,19 @@
             return self;
         }());
 
+        function formatNumber(nStr)
+        {
+            nStr += '';
+            x = nStr.split('.');
+            x1 = x[0];
+            x2 = x.length > 1 ? '.' + x[1] : '';
+            var rgx = /(\d+)(\d{3})/;
+            while (rgx.test(x1)) {
+                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+            }
+            return x1 + x2;
+        }
+
 
         $(document).ready(function () {
             $('.txio-address').each(function (i, d) {
@@ -124,6 +137,13 @@
                     $(this).text(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toLocaleString());
                     $(this).css("opacity", 1);
                 }
+            });
+
+            $("#circ-supply").each(function (i, d) {
+                var f = $(this);
+                $.get("https://supply.electroneum.com/", function(data) {
+                    f.text(formatNumber(String(data["circulating-supply"])));
+                });
             });
         });
 
