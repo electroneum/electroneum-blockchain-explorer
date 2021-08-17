@@ -810,7 +810,7 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
     std::string alert_color;
     if(height < 1175315)
     {
-        alert_message = "<b>Blockchain Update:</b> We have a planned blockchain update set to occour on block 1175315 (late September)."
+        alert_message = "<b>Blockchain Update:</b> We have a planned blockchain update set to occour on block 1175315 (approx. 30th September)."
             "<br><br>"
             "If you are a Wallet-CLI user, exchange, "
             "or vendor that utilizes any of the blockchain or wallet software, please update your binaries to the latest Electroneum 4.0 Aurora release "
