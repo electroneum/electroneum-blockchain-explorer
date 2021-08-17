@@ -1073,13 +1073,13 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
                 txd_map.insert({"blk_size"  , blk_size_str});
                 txd_map.insert({"tx_count"       , blk_txs.size() - 1});
                 txd_map.insert({"has_multiple_tx", blk_txs.size() > 2 || blk_txs.size() == 1});
+                txd_map.insert({"age", get_age(local_copy_server_timestamp, blk.timestamp).first});
 
 
                 // do not show block info for other than first tx in a block
                 if (tx_i > 0)
                 {
                     txd_map["height"]     = string("");
-                    txd_map["age"]        = string("");
                     txd_map["blk_size"]   = string("");
                     txd_map["v_link"]     = string("");
                     txd_map["v_name"]     = string("");
