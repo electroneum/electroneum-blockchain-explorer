@@ -8,10 +8,14 @@ macro(configure_files srcDir destDir)
         set(srcTemplatePath ${srcDir}/${templateFile})
         if(NOT IS_DIRECTORY ${srcTemplatePath})
             message(STATUS "Configuring file ${templateFile}")
-            configure_file(
-                    ${srcTemplatePath}
-                    ${destDir}/${templateFile}
-                    @ONLY)
+            if(${templateFile} MATCHES "((jp|pn|sv)g|bmp)$")
+                file(COPY ${srcDir}/${templateFile} DESTINATION ${destDir})
+            else()
+                configure_file(
+                        ${srcTemplatePath}
+                        ${destDir}/${templateFile}
+                        @ONLY)
+            endif()
         endif(NOT IS_DIRECTORY ${srcTemplatePath})
     endforeach(templateFile)
 endmacro(configure_files)

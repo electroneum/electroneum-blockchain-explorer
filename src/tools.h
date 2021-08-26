@@ -155,7 +155,9 @@ array<uint64_t, 4>
 summary_of_in_out_rct(
         const transaction& tx,
         vector<pair<txout_to_key, uint64_t>>& output_pub_keys,
-        vector<txin_to_key>& input_key_imgs);
+        vector<txin_to_key>& input_key_imgs,
+        vector<pair<txout_to_key_public, uint64_t>>& output_public,
+        vector<txin_to_key_public>& input_public);
 
 // this version for mempool txs from json
 array<uint64_t, 6>
@@ -408,6 +410,9 @@ get_metric_prefix(cryptonote::difficulty_type hr, double& hr_d, char& prefix);
 
 cryptonote::difficulty_type
 make_difficulty(uint64_t low, uint64_t high);
+
+crypto::public_key addKeys(const crypto::public_key &A, const crypto::public_key &B);
+
 
 }
 

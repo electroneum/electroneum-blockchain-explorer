@@ -1,38 +1,231 @@
-
-<div>
-    <br/>
-    <H4 style="margin:5px">Address:<br/>{{etn_address}}</H4>
-    <br/>
-
-    {{#testnet}}
-        <H4 style="margin:5px">Network type: Testnet</H4>
-    {{/testnet}}
-    {{#stagenet}}
-        <H4 style="margin:5px">Network type: Stagenet</H4>
-    {{/stagenet}}
-    {{^testnet}}{{^stagenet}}
-        <H4 style="margin:5px">Network type: Mainnet</H4>
-    {{/stagenet}}{{/testnet}}
-
-    <br/>
-    <H4 style="margin:5px">Associated public keys</H4>
-
-    <H4 style="margin:5px">View key: {{public_viewkey}}</H4>
-    <H4 style="margin:5px">Spend key: {{public_spendkey}}</H4>
-    <br/>
-
-    {{#is_integrated_addr}}
-        <H4 style="margin:5px">Payment id: {{encrypted_payment_id}}</H4>
-    {{/is_integrated_addr}}
-
-
-    <H4 style="margin:5px">
-        Transactions:<br/> Sorry, its not possible to find txs associated with
-        normal addresses in Electroneum
-    </H4>
-
-    <br/>
-
+<div class="row">
+    <ol class="breadcrumb bm">
+        <li><a href="/">Home</a></li>
+        <li>Address - {{etn_address}}
+        </li>
+    </ol>
 </div>
-<br/>
+<div class="row">
+    <div class="panel panel-bm addressAbstract">
+        <div class="panel-heading">
+            <div class="panel-heading-title">Summary</div>
+        </div>
+        <div class="panel-body">
+            <div class="abstract-inner addressAbstract-inner">
+                <div class="abstract-section">
+                    <dl>
+                        <dt>Address</dt>
+                        <dd class="txio-address">{{etn_address}}</dd>
+                    </dl>
+                    <dl>
+                        <dt>Balance</dt>
+                        <dd> {{balance}} <span class="text-muted">ETN</span></dd>
+                    </dl>
+                </div>
+                <div class="abstract-section">
+                    <dl>
+                        <dt>Total Received</dt>
+                        <dd>{{total_received}} <span class="text-muted">ETN</span></dd>
+                    </dl>
+                    <dl>
+                        <dt>Tx Count</dt>
+                        <dd>{{tx_count}}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-bm">
+        <div class="panel-heading" style="background-color:#e6e9ee">
+            <div class="panel-heading-title">
 
+                <ul class="address-nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#transaction" class="address-icon address-exchange" aria-controls="transaction"
+                            role="tab" data-toggle="tab">
+                            Transactions
+                            <span class="mt-small-num"> ({{tx_count}})</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="transaction">
+                    {{#txs}}
+                    <div class="tx-item">
+                        <table class="table">
+                            <tbody>
+                                <tr class="tx-item-summary">
+                                    <td>
+                                        <a href="/tx/{{hash}}" class="tx-item-summary-hash">{{hash}}</a>
+                                    </td>
+                                    <td>
+                                        <span class="tx-item-summary-timestamp">
+                                            {{#is_stealth_tx}}
+                                            <span style="background-color: #ccc;"
+                                                class="label label-primary tx-coinbase-label">Stealth</span>
+                                            {{/is_stealth_tx}}
+                                            {{#is_migration_tx}}
+                                            <span style="background-color: #b8dcbe;"
+                                                class="label label-primary tx-coinbase-label">Migration</span>
+                                            {{/is_migration_tx}}
+                                        </span>
+                                        {{^is_coinbase}}
+                                        <span class="tx-item-summary-timestamp">{{tx_fee_rate}} ETN/kB </span>
+                                        <span class="tx-item-summary-timestamp">{{tx_fee}} ETN</span>
+                                        {{/is_coinbase}}
+                                        <span
+                                            class="tx-item-summary-timestamp time-localization">{{tx_timestamp}}</span>
+                                    </td>
+                                </tr>
+                                <tr class="txio">
+                                    <td>
+                                        <ul>
+                                            {{#tx_inputs}}
+                                            {{#is_coinbase}}
+                                            <li>
+                                                <a href="/block/{{blk_height}}"><span
+                                                        class="label label-primary tx-coinbase-label">Coinbase</span></a>
+                                            </li>
+                                            {{/is_coinbase}}
+                                            {{^is_coinbase}}
+                                            <li>
+                                                {{#is_stealth}}
+                                                <span title="{{from}}" class="txio-address" style="color:#2ab1f3;">{{from}}</span>
+                                                {{/is_stealth}}
+                                                {{^is_stealth}}
+                                                {{#is_current_etn_address}}
+                                                <span title="{{from}}" class="txio-address">{{from}}</span>
+                                                {{/is_current_etn_address}}
+                                                {{^is_current_etn_address}}
+                                                <a href="/address/{{from}}">
+                                                    <span title="{{from}}" class="txio-address">{{from}}</span>
+                                                </a>
+                                                {{/is_current_etn_address}}
+                                                {{/is_stealth}}
+                                                <span class="txio-amount">
+                                                    {{amount}}
+                                                </span>
+                                            </li>
+                                            {{/is_coinbase}}
+                                            {{/tx_inputs}}
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        {{#negative_relative_balance}}
+                                        <i class="txio-arrow .txio-address-income" style="background-color: red;"><span
+                                                class="arrow right"
+                                                style="border-width: 0 4px 4px 0; border-color: #FFF; margin-left: -2px;"></span></i>
+                                        {{/negative_relative_balance}}
+                                        {{#positive_relative_balance}}
+                                        <i class="txio-arrow .txio-address-income"><span class="arrow right"
+                                                style="border-width: 0 4px 4px 0; border-color: #FFF; margin-left: -2px;"></span></i>
+                                        {{/positive_relative_balance}}
+                                        <ul>
+                                            {{#tx_outputs}}
+                                            <li>
+                                                {{#is_stealth}}
+                                                <span title="{{to}}" class="txio-address" style="color:#2ab1f3;">{{to}}</span>
+                                                {{/is_stealth}}
+                                                {{^is_stealth}}
+                                                {{#is_current_etn_address}}
+                                                <span title="{{to}}" class="txio-address">{{to}}</span>
+                                                {{/is_current_etn_address}}
+                                                {{^is_current_etn_address}}
+                                                <a title="{{to}}" href="/address/{{to}}" class="txio-address">{{to}}</a>
+                                                {{/is_current_etn_address}}
+                                                {{/is_stealth}}
+                                                {{#is_change}}
+                                                <span class="txio-amount"><span
+                                                        class="text-muted">{{amount}}</span></span>
+                                                {{/is_change}}
+                                                {{^is_change}}
+                                                <span class="txio-amount">{{amount}}</span>
+                                                {{/is_change}}
+                                            </li>
+                                            {{/tx_outputs}}
+                                        </ul>
+                                    </td>
+                                </tr>
+
+                                <tr class="tx-item-footer">
+                                    <td class="tx-item-footer-note">
+                                        <p class="tx-item-footer-note-inner">
+                                        </p>
+                                    </td>
+                                    <td class="tx-item-footer-additional">
+                                        {{#show_more}}
+                                        <a href="/tx/{{hash}}" class="tx-item-showalltx">Show All Inputs/Outputs</a>
+                                        {{/show_more}}
+                                    </td>
+                                </tr>
+                                <tr class="tx-item-footer">
+                                    <td class="tx-item-footer-note"></td>
+                                    <td class="tx-item-footer-additional">
+                                        <span class="tx-item-footer-additional-box">
+                                            {{confirmations}} Confirmations
+                                        </span>
+                                        {{#negative_relative_balance}}
+                                        <span style="color: #FFF; background-color: #d75c33"
+                                            class="tx-item-footer-additional-box">
+                                            - {{relative_balance}}
+                                        </span>
+                                        {{/negative_relative_balance}}
+                                        {{#positive_relative_balance}}
+                                        <span style="color: #FFF; background-color: #6b4"
+                                            class="tx-item-footer-additional-box">
+                                            + {{relative_balance}}
+                                        </span>
+                                        {{/positive_relative_balance}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {{/txs}}
+                    <div class="page-nav">
+                        <ul id="page-pagination" class="pagination-sm pagination">
+                            {{#is_page_zero}}
+                            <li class="first disabled">
+                                <span>&lt;&lt;</span>
+                            </li>
+                            <li class="prev disabled">
+                                <span>&lt;</span>
+                            </li>
+                            {{/is_page_zero}}
+                            {{^is_page_zero}}
+                            <li class="first">
+                                <a href="/address/{{etn_address}}">&lt;&lt;</a>
+                            </li>
+                            <li class="prev">
+                                <a href="/address/{{etn_address}}/page/{{prev_page}}">&lt;</a>
+                            </li>
+                            {{/is_page_zero}}
+                            <li class="page active">
+                                <a href="#">{{page_no}} / {{total_page_no}}</a>
+                            </li>
+                            {{#is_last_page}}
+                            <li class="next disabled">
+                                <span href="#">&gt;</span>
+                            </li>
+                            <li class="last disabled">
+                                <span href="#">&gt;&gt;</span>
+                            </li>
+                            {{/is_last_page}}
+                            {{^is_last_page}}
+                            <li class="next">
+                                <a href="/address/{{etn_address}}/page/{{next_page}}">&gt;</a>
+                            </li>
+                            <li class="last">
+                                <a href="/address/{{etn_address}}/page/{{total_page_no}}">&gt;&gt;</a>
+                            </li>
+                            {{/is_last_page}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

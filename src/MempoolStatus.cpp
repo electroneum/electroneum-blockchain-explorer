@@ -172,9 +172,13 @@ MempoolStatus::read_mempool()
         // public keys and etn amount of outputs
         vector<pair<txout_to_key, uint64_t>> output_pub_keys;
 
+        //Public inputs/outputs
+        vector<pair<txout_to_key_public, uint64_t>> output_public;
+        vector<txin_to_key_public> input_public;
+
         // sum etn in inputs and ouputs in the given tx
         const array<uint64_t, 4>& sum_data = summary_of_in_out_rct(
-               tx, output_pub_keys, input_key_imgs);
+               tx, output_pub_keys, input_key_imgs, output_public, input_public);
 
 
         double tx_size =  static_cast<double>(_tx_info.blob_size)/1024.0;
@@ -185,8 +189,8 @@ MempoolStatus::read_mempool()
 
         last_tx.sum_outputs       = sum_data[0];
         last_tx.sum_inputs        = sum_data[1];
-        last_tx.no_outputs        = output_pub_keys.size();
-        last_tx.no_inputs         = input_key_imgs.size();
+        last_tx.no_outputs        = tx.version >= 2 ? output_public.size() : output_pub_keys.size();
+        last_tx.no_inputs         = tx.version >= 3 ? input_public.size() : input_key_imgs.size();
         last_tx.mixin_no          = sum_data[2];
         last_tx.num_nonrct_inputs = sum_data[3];
 
