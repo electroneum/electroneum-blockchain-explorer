@@ -1,0 +1,13 @@
+192.168.1.1
+a4:d8:ca:ed:89:d7
+fe80::56a:bce8:21bf:769d
+etnk1VJLgFDKYTLvTzyf7fSWZ3LCB5GavYNPrkcmu1dVh6H4gyHhqJA4sv7AGYtVFxStDZUxxrwxcVWcuxNCK8SH6TxuJBm1uj
+key_live_a41edf82a0dbb07fc0c6d92Create AGENT ID GTHGE3JC7HLJ-JC2VXH1PMT3C #
+Door#235.publickeys
+Miracle springs 
+-12,12
+7609051035
+7604491825
+7608921394
+Foolio
+key_live_a41edf82a0dbb07fc0c6d92Create AGENT ID GTHGE3JC7HLJ-JC2VXH1PMT3C #
