@@ -1332,7 +1332,10 @@ crypto::public_key addKeys(const crypto::public_key &A, const crypto::public_key
 {
   public_key AB;
   ge_p3 B2, A2;
-  assert(ge_frombytes_vartime(&B2, (const unsigned char*)&B) == 0 && ge_frombytes_vartime(&A2, (const unsigned char*)&A) == 0);
+  if (ge_frombytes_vartime(&B2, (unsigned char *)&B) != 0 || ge_frombytes_vartime(&A2, (unsigned char *)&A) != 0) {
+    cerr << "addKeys: issue converting a public key to a curve point" << endl;
+            return {};
+  }
   ge_cached tmp2;
   ge_p3_to_cached(&tmp2, &B2);
   ge_p1p1 tmp3;
