@@ -242,9 +242,18 @@
             <div class="panel-heading-title">Payment ID</div>
         </div>
         <div class="panel-body text-center">
-            <div class="abstract-inner txScripts-inner">
-                {{payment_id}}
-            </div>
+
+            
+            <table class="table table-condensed">
+                <tbody>
+                    <tr class="js-realtime-row">
+                        <td class="text-left txScripts-inner" width="15px" style="vertical-align: middle;padding-right: 8px">
+                            {{payment_id}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
         </div>
     </div>
     {{/has_payment_id}}
@@ -255,14 +264,23 @@
             <div class="panel-heading-title">Input Signatures</div>
         </div>
         <div class="panel-body text-center">
-            <div class="abstract-inner txScripts-inner">
-                {{#inputs}}
-                <div>{{index}} : {{from}} : ({{amount}})</div>
-                <div>[data]: {{input_tx_hash}}{{input_relative_offset}}</div>
-                <div>[signature]: {{input_signature}}</div>
-                <div>(witness): {{input_witness}}</div><br>
-                {{/inputs}}
-            </div>
+            <table class="table table-condensed">
+                <tbody>
+                    <tr class="js-realtime-row">
+                        <td class="text-left txScripts-inner" width="15px" style="vertical-align: middle;padding-right: 8px">
+                            <div>
+                                {{#inputs}}
+                                <div>{{index}} : {{from}} : ({{amount}})</div>
+                                <div>[data]: {{input_tx_hash}}{{input_relative_offset}}</div>
+                                <div>[signature]: {{input_signature}}</div>
+                                <div>(witness): {{input_witness}}</div><br>
+                                {{/inputs}}
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
         </div>
     </div>
     {{/is_public_tx}}
