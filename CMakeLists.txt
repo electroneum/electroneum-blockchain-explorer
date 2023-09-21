@@ -106,6 +106,8 @@ configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates/partials ${CMAKE_CURRE
 configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates/js ${CMAKE_CURRENT_BINARY_DIR}/templates/js)
 configure_files(${CMAKE_CURRENT_SOURCE_DIR}/src/templates/imgs ${CMAKE_CURRENT_BINARY_DIR}/templates/imgs)
 
+find_library(SECP256K1_LIBRARY secp256k1)
+
 set(LIBRARIES
         myxrm
         myext
@@ -136,7 +138,9 @@ set(LIBRARIES
         curl
         crypto
         ssl
-	ed25519-donna)
+	    ed25519-donna
+        ${SECP256K1_LIBRARY}
+        )
 if(APPLE)
     set(LIBRARIES ${LIBRARIES} "-framework IOKit -framework Foundation")
 else()
