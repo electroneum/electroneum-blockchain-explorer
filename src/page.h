@@ -838,7 +838,7 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
         alert_message = "<b>Blockchain Update:</b> We are migrating to an EVM-based blockchain. "
           "<br><br>"
           "If you are a Wallet-CLI user, exchange, or vendor that utilizes any of the blockchain or wallet software, please "
-          "head to our <a href=\"https://electroneum-sc.gitbook.io/developer-resources/migration-to-smart-chain/overview\" style=\"\">documentation page</a> for more information on how to migrate your funds to the new blockchain."
+          "head to our <a href=\"https://electroneum.gitbook.io/developer-resources/migration-to-smart-chain/overview\" style=\"\">documentation page</a> for more information on how to migrate your funds to the new blockchain."
           "<br><br>"
           "If you are an Electroneum App (Android/iOS) or Online Wallet (MyETN) user, your funds will be migrated automatically on first login.";
 
