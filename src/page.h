@@ -4687,8 +4687,8 @@ show_address_details(const address_parse_info& address_info, cryptonote::network
             {"etn_address"        , REMOVE_HASH_BRAKETS(address_str)},
             {"is_sub_addr" , false},
             {"tx_count"    , tx_outs_map.size()},
-            {"total_received"    , electroneumeg::etn_amount_to_str(total_received)},
-            {"balance"    , electroneumeg::etn_amount_to_str(total_received - total_spent)},
+            {"total_received"    , electroneumeg::etn_amount_to_str(total_received, "{:0.2f}", false)},
+            {"balance"    , electroneumeg::etn_amount_to_str(total_received - total_spent, "{:0.2f}", false)},
     };
 
     context.emplace("txs", mstch::array());
