@@ -4635,60 +4635,30 @@ show_address_details(const address_parse_info& address_info, cryptonote::network
     string pub_viewkey_str  = fmt::format("{:s}", address_info.address.m_view_public_key);
     string pub_spendkey_str = fmt::format("{:s}", address_info.address.m_spend_public_key);
 
-    vector<address_outputs> outs;
-    const uint64_t server_time = std::time(nullptr);
     public_key combined_key = electroneumeg::addKeys(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
-    if(addr_outs_cache.Contains(combined_key)) {
-      pair<uint64_t, vector<address_outputs>> outs_pair = addr_outs_cache.Get(combined_key);
 
-      uint64_t delta = server_time - outs_pair.first;
-      uint64_t threshold = page_no == 1 ? 1 * 30 : 10 * 60;
-      if(delta > threshold)
-      {
-        outs = mcore->get_addr_outputs(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
-        addr_outs_cache.Put(combined_key, { server_time, outs });
-      }
-      else
-      {
-        outs = outs_pair.second;
-      }
-    }
-    else
-    {
-      outs = mcore->get_addr_outputs(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
-      addr_outs_cache.Put(combined_key, { server_time, outs });
-    }
-
-    map<string, vector<address_outputs>> tx_outs_map;
-    vector<crypto::hash> tx_hashes;
-
-    uint64_t total_received = 0, total_spent = 0;
-
+    vector<address_outputs> outs = mcore->get_addr_outputs(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
+    uint64_t total_received = 0;
     for(auto addr_out: outs)
     {
-      string key = epee::string_tools::pod_to_hex(addr_out.tx_hash);
-      auto it = tx_outs_map.find(key);
-      if (it != tx_outs_map.end())
-      {
-        vector<address_outputs> &outs_vec = it->second;
-        outs_vec.push_back(addr_out);
-      }
-      else
-      {
-        tx_outs_map.insert(it, pair<string, vector<address_outputs>>(key, vector<address_outputs> {addr_out}));
-        tx_hashes.push_back(addr_out.tx_hash);
-      }
-
       total_received += addr_out.amount;
-      if(addr_out.spent) total_spent += addr_out.amount;
     }
+
+    vector<crypto::hash> tx_hashes;
+    vector<address_txs> addr_txs = mcore->get_addr_txs(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
+    for(auto &a : addr_txs)
+    {
+      tx_hashes.push_back(a.tx_hash);
+    }
+
+    uint64_t balance = mcore->get_balance(address_info.address.m_view_public_key, address_info.address.m_spend_public_key);
 
     mstch::map context {
             {"etn_address"        , REMOVE_HASH_BRAKETS(address_str)},
             {"is_sub_addr" , false},
-            {"tx_count"    , tx_outs_map.size()},
+            {"tx_count"    , tx_hashes.size()},
             {"total_received"    , electroneumeg::etn_amount_to_str(total_received, "{:0.2f}", false)},
-            {"balance"    , electroneumeg::etn_amount_to_str(total_received - total_spent, "{:0.2f}", false)},
+            {"balance"    , electroneumeg::etn_amount_to_str(balance, "{:0.2f}", false)},
     };
 
     context.emplace("txs", mstch::array());

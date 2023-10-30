@@ -3,6 +3,7 @@
 //
 
 #include "MicroCore.h"
+#include "tools.h"
 
 
 namespace electroneumeg
@@ -250,6 +251,54 @@ MicroCore::get_addr_outputs(const public_key &view_key, const public_key &spend_
   {
     public_key combined_key = electroneumeg::addKeys(view_key, spend_key);
     res = m_blockchain_storage.get_db().get_addr_output_all(combined_key);
+  }
+  catch (const DB_ERROR& e)
+  {
+    cerr << "Blockchain access error when getting address output indexes "
+         << e.what()
+         << endl;
+  }
+  catch (...)
+  {
+    cerr << "Something went terribly wrong when getting address output indexes "
+         << endl;
+  }
+
+  return res;
+}
+
+std::vector<address_txs>
+MicroCore::get_addr_txs(const public_key &view_key, const public_key &spend_key)
+{
+  std::vector<address_txs> res;
+  try
+  {
+    public_key combined_key = electroneumeg::addKeys(view_key, spend_key);
+    res = m_blockchain_storage.get_db().get_addr_tx_all(combined_key);
+  }
+  catch (const DB_ERROR& e)
+  {
+    cerr << "Blockchain access error when getting address output indexes "
+         << e.what()
+         << endl;
+  }
+  catch (...)
+  {
+    cerr << "Something went terribly wrong when getting address output indexes "
+         << endl;
+  }
+
+  return res;
+}
+
+uint64_t
+MicroCore::get_balance(const public_key &view_key, const public_key &spend_key)
+{
+  uint64_t res = 0;
+  try
+  {
+    public_key combined_key = electroneumeg::addKeys(view_key, spend_key);
+    res = m_blockchain_storage.get_db().get_balance(combined_key);
   }
   catch (const DB_ERROR& e)
   {
