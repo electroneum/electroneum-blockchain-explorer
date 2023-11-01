@@ -68,6 +68,12 @@ namespace electroneumeg
         std::vector<address_outputs>
         get_addr_outputs(const public_key &view_key, const public_key &spend_key);
 
+        std::vector<address_txs>
+        get_addr_txs(const public_key &view_key, const public_key &spend_key);
+
+        uint64_t
+        get_balance(const public_key &view_key, const public_key &spend_key);
+
         cryptonote::tx_input_t
         get_tx_input(const crypto::hash tx_hash, const uint64_t relative_out_index);
 
