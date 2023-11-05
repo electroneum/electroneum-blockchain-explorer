@@ -255,6 +255,8 @@ struct tx_details
     std::string v_link;
     std::string v_name;
     std::string topUp = "";
+    bool is_sc_migration;
+    std::string sc_address;
 
     bool has_additional_tx_pub_keys {false};
 /*
@@ -322,7 +324,7 @@ struct tx_details
             payed_for_kB_str = fmt::format("{:0.2f}", payed_for_kB);
             payed_for_kB_micro_str = fmt::format("{:02.0f}", payed_for_kB * 1e6);
         }
-
+        
 
         mstch::map txd_map {
                 {"hash"              , pod_to_hex(hash)},
@@ -363,6 +365,8 @@ struct tx_details
                 {"is_stealth_tx"     , version == 1},
                 {"is_migration_tx"     , version == 2},
                 {"is_public_tx"     , version >= 3},
+                {"is_sc_migration", is_sc_migration},
+                {"sc_address", sc_address},
                 {"show_more"     , get_no_inputs() >= 5 || get_no_outputs() >= 5},
                 {"relative_balance"     , balance > 0 ? etn_amount_to_str(balance , "{:0.2f}") : etn_amount_to_str(balance * -1 , "{:0.2f}")},
                 {"positive_relative_balance"     , balance > 0},
@@ -6658,6 +6662,8 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
             {"is_stealth_tx"     , txd.version == 1},
             {"is_migration_tx"     , txd.version == 2},
             {"is_public_tx"     , txd.version >= 3},
+            {"is_sc_migration", txd.is_sc_migration},
+            {"sc_address", txd.sc_address},
     };
 
     // append tx_json as in raw format to html
@@ -7323,6 +7329,42 @@ get_tx_details(const transaction& tx,
     }
 
     txd.mcore = mcore;
+
+    // Check if it's sc migration tx
+    txd.is_sc_migration = false;
+    if(tx.version >= 3)
+    {
+      for(auto i = 0; i < tx.vout.size(); ++i) {
+        tx_out outp = tx.vout[i];
+        const txout_to_key_public& txout_key = boost::get<cryptonote::txout_to_key_public>(outp.target);
+
+        std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+
+        if(to.compare("etnk6XD4xkmgsajaYyDD7SGsB93Ff6iUN2TaAaqageGkKj2yB1mtd5wJ8QgRfFWTzmJ8QgRfFWTzmJ8QgRfFWTzm4t51KXZBNg") == 0) {
+          txd.is_sc_migration = true;
+          break;
+        }
+      }
+    }
+
+    if(txd.is_sc_migration)
+    {
+      for(auto i = 0; i < tx.extra.size(); i++)
+      {
+        if(tx.extra[i] == TX_EXTRA_TAG_BRIDGE_SMARTCHAIN_ADDRESS) {
+          uint8_t size = tx.extra[i+1];
+
+          if(size != 42) continue;
+
+          vector<uint8_t> sc_address_bytes;
+          for(auto j = 0; j < size; j++) {
+            sc_address_bytes.push_back(tx.extra[i+2+j]);
+          }
+          txd.sc_address = string{reinterpret_cast<const char*>(sc_address_bytes.data()), sc_address_bytes.size()}; //epee::string_tools::buff_to_hex_nodelimer(string{reinterpret_cast<const char*>(sc_address_bytes.data()), sc_address_bytes.size()});
+          break;
+        }
+      }
+    }
     
     return txd;
 }

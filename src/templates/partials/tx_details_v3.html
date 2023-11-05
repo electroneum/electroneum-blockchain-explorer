@@ -53,8 +53,18 @@
                             <span style="background-color: #94d2dc;"
                                 class="label label-primary tx-coinbase-label">Public</span>
                             {{/is_public_tx}}
+                            {{#is_sc_migration}}
+                            <span style="background-color: #beb8dc;"
+                                class="label label-primary tx-coinbase-label">Bridge</span>
+                            {{/is_sc_migration}}
                         </dd>
                     </dl>
+                    {{#is_sc_migration}}
+                    <dl>
+                        <dt>SmartChain Address</dt>
+                        <dd class="txScripts-inner"><a href="https://blockexplorer.electroneum.com/address/{{sc_address}}">{{sc_address}}</a></dd>
+                    </dl>
+                    {{/is_sc_migration}}
                 </div>
                 <div class="abstract-section">
                     <dl>

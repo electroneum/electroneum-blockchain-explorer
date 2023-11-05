@@ -71,6 +71,10 @@
                                             <span style="background-color: #b8dcbe;"
                                                 class="label label-primary tx-coinbase-label">Migration</span>
                                             {{/is_migration_tx}}
+                                            {{#is_sc_migration}}
+                                            <span style="background-color: #beb8dc;"
+                                                class="label label-primary tx-coinbase-label">Bridge</span>
+                                            {{/is_sc_migration}}
                                         </span>
                                         {{^is_coinbase}}
                                         <span class="tx-item-summary-timestamp">{{tx_fee_rate}} ETN/kB </span>
@@ -162,7 +166,14 @@
                                     </td>
                                 </tr>
                                 <tr class="tx-item-footer">
-                                    <td class="tx-item-footer-note"></td>
+                                    <td class="tx-item-footer-note">
+                                        {{#is_sc_migration}}
+                                        <span style="margin-left: -55px; font-size: 14px;"
+                                            class="tx-item-footer-additional-box">
+                                            SmartChain Address: <a href="https://blockexplorer.electroneum.com/address/{{sc_address}}">{{sc_address}}</a>
+                                        </span>
+                                        {{/is_sc_migration}}
+                                    </td>
                                     <td class="tx-item-footer-additional">
                                         <span class="tx-item-footer-additional-box">
                                             {{confirmations}} Confirmations
