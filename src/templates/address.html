@@ -119,13 +119,30 @@
                                     </td>
                                     <td>
                                         {{#negative_relative_balance}}
+                                        {{^is_sc_migration}}
                                         <i class="txio-arrow .txio-address-income" style="background-color: red;"><span
                                                 class="arrow right"
                                                 style="border-width: 0 4px 4px 0; border-color: #FFF; margin-left: -2px;"></span></i>
+                                        {{/is_sc_migration}}
+                                        {{/negative_relative_balance}}
+                                        {{#negative_relative_balance}}
+                                        {{#is_sc_migration}}
+                                        <i class="txio-arrow .txio-address-income" style="background-color: #897ad3;"><span
+                                                class="arrow right"
+                                                style="border-width: 0 4px 4px 0; border-color: #FFF; margin-left: -2px;"></span></i>
+                                        {{/is_sc_migration}}
                                         {{/negative_relative_balance}}
                                         {{#positive_relative_balance}}
+                                        {{^is_sc_migration}}
                                         <i class="txio-arrow .txio-address-income"><span class="arrow right"
                                                 style="border-width: 0 4px 4px 0; border-color: #FFF; margin-left: -2px;"></span></i>
+                                        {{/is_sc_migration}}
+                                        {{/positive_relative_balance}}
+                                        {{#positive_relative_balance}}
+                                        {{#is_sc_migration}}
+                                        <i class="txio-arrow .txio-address-income" style="background-color: #897ad3;"><span class="arrow right"
+                                                style="border-width: 0 4px 4px 0; border-color: #FFF; margin-left: -2px;"></span></i>
+                                        {{/is_sc_migration}}
                                         {{/positive_relative_balance}}
                                         <ul>
                                             {{#tx_outputs}}
@@ -179,16 +196,36 @@
                                             {{confirmations}} Confirmations
                                         </span>
                                         {{#negative_relative_balance}}
+                                        {{^is_sc_migration}}
                                         <span style="color: #FFF; background-color: #d75c33"
                                             class="tx-item-footer-additional-box">
                                             - {{relative_balance}}
                                         </span>
+                                        {{/is_sc_migration}}
+                                        {{/negative_relative_balance}}
+                                        {{#negative_relative_balance}}
+                                        {{#is_sc_migration}}
+                                        <span style="color: #FFF; background-color: #897ad3"
+                                            class="tx-item-footer-additional-box">
+                                            {{relative_balance}}
+                                        </span>
+                                        {{/is_sc_migration}}
                                         {{/negative_relative_balance}}
                                         {{#positive_relative_balance}}
+                                        {{^is_sc_migration}}
                                         <span style="color: #FFF; background-color: #6b4"
                                             class="tx-item-footer-additional-box">
                                             + {{relative_balance}}
                                         </span>
+                                        {{/is_sc_migration}}
+                                        {{/positive_relative_balance}}
+                                        {{#positive_relative_balance}}
+                                        {{#is_sc_migration}}
+                                        <span style="color: #FFF; background-color: #897ad3"
+                                            class="tx-item-footer-additional-box">
+                                            {{relative_balance}}
+                                        </span>
+                                        {{/is_sc_migration}}
                                         {{/positive_relative_balance}}
                                     </td>
                                 </tr>
