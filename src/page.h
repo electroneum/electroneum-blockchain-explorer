@@ -838,7 +838,7 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
 
         show_alert = true;
         alert_color = "#49b990";
-    } else if(height >= 1660000) {
+    } /*else if(height >= 1660000) {
         alert_message = "<b>Blockchain Update:</b> We are migrating to an EVM-based blockchain. "
           "<br><br>"
           "If you are a Wallet-CLI user, exchange, or vendor that utilizes any of the blockchain or wallet software, please "
@@ -848,7 +848,7 @@ index2(uint64_t page_no = 1, bool refresh_page = false)
 
         show_alert = true;
         alert_color = "#ffb445";
-      }
+    }*/
 
     // initalise page tempate map with basic info about blockchain
     mstch::map context {
