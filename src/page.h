@@ -7340,7 +7340,8 @@ get_tx_details(const transaction& tx,
 
         std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
 
-        if(to.compare("etnk6XD4xkmgsajaYyDD7SGsB93Ff6iUN2TaAaqageGkKj2yB1mtd5wJ8QgRfFWTzmJ8QgRfFWTzmJ8QgRfFWTzm4t51KXZBNg") == 0) {
+        if(to.compare("etnk6XD4xkmgsajaYyDD7SGsB93Ff6iUN2TaAaqageGkKj2yB1mtd5wJ8QgRfFWTzmJ8QgRfFWTzmJ8QgRfFWTzm4t51KXZBNg") == 0 ||
+            to.compare("etnkbQP9THPgsajaYyDD7SGsB93Ff6iUN2TaAaqageGkKj2yB1mtd5wJ8QgRfFWTzmJ8QgRfFWTzmJ8QgRfFWTzm4t51My8iJ8") == 0) {
           txd.is_sc_migration = true;
           break;
         }
