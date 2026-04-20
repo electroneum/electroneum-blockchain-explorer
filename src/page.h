@@ -7085,67 +7085,83 @@ construct_tx_context(transaction tx, uint16_t with_ring_signatures = 0)
 
       std::map<std::string, uint64_t> output_address_amount;
 
-      for(auto i = 0; i < tx.vout.size(); ++i) {
-
-        tx_out outp = tx.vout[i];
-        const txout_to_key_public& txout_key = boost::get<cryptonote::txout_to_key_public>(outp.target);
-        outputs_etn_sum += outp.amount;
-
-        std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
-
-        bool is_change = false;
-        if(input_addresses.find(to) != input_addresses.end()) 
-        {
-            is_change = true;
-            auto it = input_address_amount.find(to);
-            it->second -= outp.amount;
-        }
-        else
-        {
-            if(output_address_amount.find(to) == output_address_amount.end()) 
-            {
-                output_address_amount.insert({to, outp.amount});
-            }
-            else
-            {
-                auto it = output_address_amount.find(to);
-                it->second += outp.amount;
-            }
-        }
-
-        tx_input_t spent_tx_in = mcore->get_tx_input(tx.hash, i);
-
-        bool is_spent = false;
-        if(spent_tx_in.tx_hash != crypto::null_hash)
-          is_spent = true;
-
-        outputs.push_back(mstch::map {
-                {"index"          , i},
-                {"amount"         , electroneumeg::etn_amount_to_str(outp.amount)},
-                {"to"             , to},
-                {"is_change"      , is_change},
-                {"is_spent"       , is_spent},
-                {"spent_tx_hash"  , epee::string_tools::pod_to_hex(spent_tx_in.tx_hash)},
-                {"spent_tx_index" , std::to_string(spent_tx_in.in_index)}
-        });
-      }
-
-      for(auto m : input_address_amount)
+      try
       {
-        invoice_entries.push_back(mstch::map {
-            {"address",         m.first},
-            {"amount",          electroneumeg::etn_amount_to_str(m.second)},
-            {"positive",        false}
-        });
-      }
+        for(auto i = 0; i < tx.vout.size(); ++i) {
 
-      for(auto m : output_address_amount)
+          tx_out outp = tx.vout[i];
+          const txout_to_key_public& txout_key = boost::get<cryptonote::txout_to_key_public>(outp.target);
+          outputs_etn_sum += outp.amount;
+
+          std::string to = get_account_address_as_str(network_type::MAINNET, txout_key.m_address_prefix == 34402, txout_key.address);
+
+          bool is_change = false;
+          if(input_addresses.find(to) != input_addresses.end())
+          {
+              is_change = true;
+              auto it = input_address_amount.find(to);
+              it->second -= outp.amount;
+          }
+          else
+          {
+              if(output_address_amount.find(to) == output_address_amount.end())
+              {
+                  output_address_amount.insert({to, outp.amount});
+              }
+              else
+              {
+                  auto it = output_address_amount.find(to);
+                  it->second += outp.amount;
+              }
+          }
+
+          tx_input_t spent_tx_in = mcore->get_tx_input(tx.hash, i);
+
+          bool is_spent = false;
+          if(spent_tx_in.tx_hash != crypto::null_hash)
+            is_spent = true;
+
+          outputs.push_back(mstch::map {
+                  {"index"          , i},
+                  {"amount"         , electroneumeg::etn_amount_to_str(outp.amount)},
+                  {"to"             , to},
+                  {"is_change"      , is_change},
+                  {"is_spent"       , is_spent},
+                  {"spent_tx_hash"  , epee::string_tools::pod_to_hex(spent_tx_in.tx_hash)},
+                  {"spent_tx_index" , std::to_string(spent_tx_in.in_index)}
+          });
+        }
+
+        for(auto m : input_address_amount)
+        {
+          invoice_entries.push_back(mstch::map {
+              {"address",         m.first},
+              {"amount",          electroneumeg::etn_amount_to_str(m.second)},
+              {"positive",        false}
+          });
+        }
+
+        for(auto m : output_address_amount)
+        {
+          invoice_entries.push_back(mstch::map {
+              {"address",         m.first},
+              {"amount",          electroneumeg::etn_amount_to_str(m.second)},
+              {"positive",        true}
+          });
+        }
+      }
+      catch(const std::exception& e)
       {
-        invoice_entries.push_back(mstch::map {
-            {"address",         m.first},
-            {"amount",          electroneumeg::etn_amount_to_str(m.second)},
-            {"positive",        true}
-        });
+        cerr << "Error rendering tx outputs for " << pod_to_hex(tx.hash)
+             << ": " << e.what() << endl;
+        context["has_error"] = true;
+        context["error_msg"] = fmt::format("Error rendering tx outputs: {:s}", e.what());
+      }
+      catch(...)
+      {
+        cerr << "Unknown error rendering tx outputs for " << pod_to_hex(tx.hash) << endl;
+        context["has_error"] = true;
+        context["error_msg"] = std::string("Unknown error rendering tx outputs");
       }
 
       context["outputs_no"] = std::to_string(tx.vout.size());
