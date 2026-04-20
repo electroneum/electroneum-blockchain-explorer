@@ -36,6 +36,27 @@ struct jsonresponse: public crow::response
         add_header("Content-Type", "application/json");
     }
 };
+
+template <typename F>
+htmlresponse safehtml(F&& f)
+{
+    try
+    {
+        return htmlresponse(std::forward<F>(f)());
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Unhandled exception in request handler: " << e.what() << std::endl;
+        return htmlresponse(std::string(
+            "<html><body><h3>An error occurred processing this request.</h3></body></html>"));
+    }
+    catch (...)
+    {
+        std::cerr << "Unknown unhandled exception in request handler" << std::endl;
+        return htmlresponse(std::string(
+            "<html><body><h3>An error occurred processing this request.</h3></body></html>"));
+    }
+}
 }
 
 int
@@ -321,29 +342,33 @@ main(int ac, const char* av[])
 
     CROW_ROUTE(app, "/block/<string>")
     ([&](string block_hash) {
-        return myetn::htmlresponse(
-                etnblocks.show_block(remove_bad_chars(block_hash)));
+        return myetn::safehtml([&] {
+            return etnblocks.show_block(remove_bad_chars(block_hash));
+        });
     });
 
     CROW_ROUTE(app, "/block/<string>/page/<uint>")
     ([&](string block_hash, size_t page_no) {
-        return myetn::htmlresponse(
-                etnblocks.show_block(remove_bad_chars(block_hash), page_no));
+        return myetn::safehtml([&] {
+            return etnblocks.show_block(remove_bad_chars(block_hash), page_no);
+        });
     });
 
     CROW_ROUTE(app, "/tx/<string>")
     ([&](string tx_hash) {
-        return myetn::htmlresponse(
-                etnblocks.show_tx(remove_bad_chars(tx_hash)));
+        return myetn::safehtml([&] {
+            return etnblocks.show_tx(remove_bad_chars(tx_hash));
+        });
     });
     if (enable_autorefresh_option)
     {
         CROW_ROUTE(app, "/tx/<string>/autorefresh")
         ([&](string tx_hash) {
-            bool refresh_page {true};
-            uint16_t with_ring_signatures {0};
-            return myetn::htmlresponse(
-                etnblocks.show_tx(remove_bad_chars(tx_hash), with_ring_signatures, refresh_page));
+            return myetn::safehtml([&] {
+                bool refresh_page {true};
+                uint16_t with_ring_signatures {0};
+                return etnblocks.show_tx(remove_bad_chars(tx_hash), with_ring_signatures, refresh_page);
+            });
         });
     }
 
